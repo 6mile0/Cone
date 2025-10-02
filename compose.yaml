@@ -1,0 +1,14 @@
+﻿services:
+  ice-db:
+    container_name: ice-db
+    image: postgres:17.5
+    ports:
+      - "25432:5432"
+    volumes:
+      - ice_db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=ice
+      - POSTGRES_USER=ice
+      - POSTGRES_PASSWORD=icepassword
+volumes:
+  ice_db:
