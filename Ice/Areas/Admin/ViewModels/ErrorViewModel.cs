@@ -1,4 +1,4 @@
-namespace Ice.Models;
+namespace Ice.Areas.Admin.ViewModels;
 
 public class ErrorViewModel
 {
