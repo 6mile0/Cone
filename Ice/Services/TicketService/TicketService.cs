@@ -3,6 +3,7 @@ using Ice.Areas.Student.Dtos.Res;
 using Ice.Db;
 using Ice.Db.Models;
 using Ice.Enums;
+using Ice.Exception;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ice.Services.TicketService;
@@ -26,7 +27,16 @@ public class TicketService(IceDbContext iceDbContext): ITicketService
     public async Task<AddTicketResDto> CreateTicketAsync(AddTicketDto addTicketDto, CancellationToken cancellationToken)
     {
         var transaction = await iceDbContext.Database.BeginTransactionAsync(cancellationToken);
-        
+
+        // StudentGroupが存在するか確認
+        var studentGroupExists = await iceDbContext.StudentGroups
+            .AnyAsync(sg => sg.Id == addTicketDto.StudentGroupId, cancellationToken);
+
+        if (!studentGroupExists)
+        {
+            throw new EntityNotFoundException($"StudentGroup with ID {addTicketDto.StudentGroupId} does not exist.");
+        }
+
         var ticket = new Tickets
         {
             Title = addTicketDto.Title,
