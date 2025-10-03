@@ -59,7 +59,7 @@ public class AssignmentController(IAssignmentService assignmentService, ILogger<
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest("Invalid data.");
+            return BadRequest("並び順が不正です。");
         }
 
         foreach (var assignmentOrder in request.Assignments)
