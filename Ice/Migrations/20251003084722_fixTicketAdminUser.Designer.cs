@@ -3,6 +3,7 @@ using System;
 using Ice.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ice.Migrations
 {
     [DbContext(typeof(IceDbContext))]
-    partial class IceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251003084722_fixTicketAdminUser")]
+    partial class fixTicketAdminUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -109,8 +112,7 @@ namespace Ice.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssignmentId")
-                        .IsUnique();
+                    b.HasIndex("AssignmentId");
 
                     b.HasIndex("StudentGroupId", "AssignmentId")
                         .IsUnique();
@@ -245,8 +247,8 @@ namespace Ice.Migrations
             modelBuilder.Entity("Ice.Db.Models.StudentGroupAssignmentsProgress", b =>
                 {
                     b.HasOne("Ice.Db.Models.Assignments", "Assignment")
-                        .WithOne("StudentGroupAssignmentsProgress")
-                        .HasForeignKey("Ice.Db.Models.StudentGroupAssignmentsProgress", "AssignmentId")
+                        .WithMany()
+                        .HasForeignKey("AssignmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -283,7 +285,7 @@ namespace Ice.Migrations
             modelBuilder.Entity("Ice.Db.Models.TicketAssignments", b =>
                 {
                     b.HasOne("Ice.Db.Models.Assignments", "Assignment")
-                        .WithMany("TicketAssignments")
+                        .WithMany()
                         .HasForeignKey("AssignmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -308,14 +310,6 @@ namespace Ice.Migrations
                         .IsRequired();
 
                     b.Navigation("StudentGroup");
-                });
-
-            modelBuilder.Entity("Ice.Db.Models.Assignments", b =>
-                {
-                    b.Navigation("StudentGroupAssignmentsProgress")
-                        .IsRequired();
-
-                    b.Navigation("TicketAssignments");
                 });
 
             modelBuilder.Entity("Ice.Db.Models.Tickets", b =>

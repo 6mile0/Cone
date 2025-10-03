@@ -6,7 +6,7 @@ public class AdminUserViewModel
 {
     public required long Id { get; init; }
     
-    public required string FullName { get; init; }
+    public required string? FullName { get; init; }
     
     public required TutorTypes TutorType { get; init; }
     

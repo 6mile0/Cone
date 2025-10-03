@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Ice.Areas.Admin.Controllers;
 
-[Area("Admin")]
+[Area("admin")]
 [Route("[area]")]
 public class HomeController(ILogger<HomeController> logger) : Controller
 {

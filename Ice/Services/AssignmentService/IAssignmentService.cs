@@ -21,6 +21,22 @@ public interface IAssignmentService
     Task<Assignments?> GetAssignmentByIdAsync(long assignmentId, CancellationToken cancellationToken);
     
     /// <summary>
+    /// Get the assignments by student group ID.
+    /// </summary>
+    /// <param name="studentGroupId">The ID of the student group.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A list of assignments for the specified student group.</returns>
+    Task<IReadOnlyList<Assignments>> GetAssignmentsByStudentGroupIdAsync(long studentGroupId, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Get the tasks released for each group.
+    /// </summary>
+    /// <param name="groupId">The ID of the group.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A list of assignments for the specified group.</returns>
+    Task<IReadOnlyList<Assignments>> GetReleasedAssignmentByGroupId(long groupId, CancellationToken cancellationToken);
+    
+    /// <summary>
     /// Create a new assignment.
     /// </summary>
     /// <param name="addAssignmentDto">The assignment to create.</param>

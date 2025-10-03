@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Ice.Areas.Admin.Controllers;
 
-[Area("Admin")]
+[Area("admin")]
 [Route("[area]/users")]
 public class AdminUserController(IAdminUserService adminUserService): Controller
 {
@@ -57,5 +57,18 @@ public class AdminUserController(IAdminUserService adminUserService): Controller
     {
         await adminUserService.DeleteAdminUserAsync(adminUserId, cancellationToken);
         return RedirectToAction("Index");
+    }
+
+    [HttpGet("api/list")]
+    public async Task<IActionResult> GetAdminUsersList(CancellationToken cancellationToken)
+    {
+        var users = await adminUserService.GetAllAdminUsersAsync(cancellationToken);
+        var userList = users.Select(u => new
+        {
+            id = u.Id,
+            fullName = u.FullName
+        }).ToList();
+
+        return Json(userList);
     }
 }

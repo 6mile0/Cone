@@ -16,10 +16,7 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Areas\Student\" />
+      <PackageReference Include="Vereyon.Web.FlashMessage" Version="3.0.0" />
     </ItemGroup>
 
     <ItemGroup>

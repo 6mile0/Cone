@@ -16,11 +16,15 @@ public class Tickets
     public required string Title { get; set; }
     
     [Required]
-    public required TicketStatus Status { get; set; } = TicketStatus.Open;
+    public required TicketStatus Status { get; set; } = TicketStatus.InProgress;
     
     [Required]
     public required DateTimeOffset CreatedAt { get; set; }
     
     [ConcurrencyCheck]
     public required DateTimeOffset UpdatedAt { get; set; }
+    
+    // Navigation property
+    public StudentGroups? StudentGroup { get; set; }
+    public TicketAdminUsers? TicketAdminUser { get; set; }
 }
