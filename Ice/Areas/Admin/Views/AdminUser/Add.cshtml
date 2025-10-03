@@ -1,0 +1,35 @@
+@model Ice.Areas.Admin.Dtos.Req.AddAdminUserDto
+@{
+    ViewData["Title"] = "講師を追加 | ice";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">講師を追加</h1>
+
+    <form method="post" asp-action="AddUser">
+        <div class="mb-3">
+            <label asp-for="FullName" class="form-label">名前</label>
+            <input asp-for="FullName" type="text" class="form-control" placeholder="山田 太郎" required maxlength="200" />
+            <span asp-validation-for="FullName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="TutorType" class="form-label">講師種別</label>
+            <select asp-for="TutorType" class="form-select" required>
+                <option value="">選択してください</option>
+                <option value="1">TA</option>
+                <option value="2">SA</option>
+            </select>
+            <span asp-validation-for="TutorType" class="text-danger"></span>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">追加</button>
+            <a asp-action="Index" class="btn btn-secondary">キャンセル</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

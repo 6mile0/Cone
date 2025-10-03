@@ -1,0 +1,231 @@
+﻿@model Ice.Areas.Admin.ViewModels.Assignment.AssignmentListViewModel
+@{
+    ViewData["Title"] = "課題一覧 | ice";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>課題一覧</h1>
+        <div>
+            <button id="toggleSortMode" class="btn btn-secondary me-2">並び替えモード</button>
+            <a asp-action="AddAssignment" class="btn btn-primary">課題を追加する</a>
+        </div>
+    </div>
+
+    <form id="sortForm" method="post" asp-action="SortAssignments">
+        <div id="sortAlert" class="alert alert-info" style="display: none;">
+            行をドラッグして順序を変更できます。変更を保存するには「保存」ボタンを押してください。
+            <button type="submit" class="btn btn-sm btn-success ms-2">保存</button>
+            <button id="cancelSort" type="button" class="btn btn-sm btn-secondary ms-2">キャンセル</button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                <tr>
+                    <th></th>
+                    <th>課題名</th>
+                    <th>説明</th>
+                    <th>作成日時</th>
+                    <th>更新日時</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody id="sortableTable">
+                @{
+                    var index = 0;
+                }
+                @foreach (var assignment in Model.Assignments)
+                {
+                    <tr data-id="@assignment.Id" data-index="@index" draggable="false">
+                        <td class="drag-handle" style="cursor: default;">⋮⋮</td>
+                        <td>@assignment.Name</td>
+                        <td>@assignment.Description</td>
+                        <td>@assignment.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                        <td>@assignment.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-primary">編集</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger">削除</button>
+                            </div>
+                        </td>
+                        <input type="hidden" name="Assignments[@index].Id" value="@assignment.Id"/>
+                        <input type="hidden" name="Assignments[@index].SortOrder" value="@(index + 1)"
+                               class="sort-order-field"/>
+                    </tr>
+                    index++;
+                }
+                </tbody>
+            </table>
+        </div>
+    </form>
+
+    @if (!Model.Assignments.Any())
+    {
+        <div class="alert alert-info" role="alert">
+            課題が登録されていません。
+        </div>
+    }
+</div>
+
+<style>
+    .drag-handle {
+        text-align: center;
+        font-size: 1.2em;
+        color: #999;
+    }
+
+    .sort-mode-active .drag-handle {
+        cursor: grab !important;
+        color: #333;
+    }
+
+    .sort-mode-active tr {
+        cursor: move;
+    }
+
+    tr.dragging {
+        opacity: 0.5;
+        background-color: #e9ecef;
+    }
+
+    tr.drag-over {
+        border-top: 3px solid #0d6efd;
+    }
+</style>
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    let sortModeActive = false;
+    let originalOrder = [];
+    let draggedElement = null;
+
+    const toggleButton = document.getElementById('toggleSortMode');
+    const sortAlert   = document.getElementById('sortAlert');
+    const cancelButton= document.getElementById('cancelSort');
+    const tbody       = document.getElementById('sortableTable');
+    const sortForm    = document.getElementById('sortForm');
+
+    // --- イベント登録 ---
+    toggleButton.addEventListener('click', toggleSortMode);
+    cancelButton.addEventListener('click', cancelSort);
+    sortForm.addEventListener('submit', updateHiddenFields);
+
+    /** 並び替えモードの切替 */
+    function toggleSortMode() {
+        sortModeActive = !sortModeActive;
+        sortModeActive ? enableSortMode() : disableSortMode();
+    }
+
+    /** 並び替えモードON */
+    function enableSortMode() {
+        setButtonState('通常モード', 'btn-warning', 'btn-secondary');
+        sortAlert.style.display = 'block';
+        tbody.classList.add('sort-mode-active');
+
+        originalOrder = [...tbody.querySelectorAll('tr')].map(r => r.cloneNode(true));
+        toggleRowDrag(true);
+    }
+
+    /** 並び替えモードOFF */
+    function disableSortMode() {
+        setButtonState('並び替えモード', 'btn-secondary', 'btn-warning');
+        sortAlert.style.display = 'none';
+        tbody.classList.remove('sort-mode-active');
+
+        toggleRowDrag(false);
+    }
+
+    /** 元に戻す */
+    function cancelSort() {
+        restoreOriginalOrder();
+        disableSortMode();
+        sortModeActive = false;
+    }
+
+    /** ボタンUI切替 */
+    function setButtonState(text, addClass, removeClass) {
+        toggleButton.textContent = text;
+        toggleButton.classList.add(addClass);
+        toggleButton.classList.remove(removeClass);
+    }
+
+    /** 行ドラッグ可能/不可の切替 */
+    function toggleRowDrag(enable) {
+        tbody.querySelectorAll('tr').forEach(row => {
+            row.setAttribute('draggable', enable);
+            row.querySelector('.drag-handle').style.cursor = enable ? 'grab' : 'default';
+
+            const events = {
+                dragstart: handleDragStart,
+                dragover:  handleDragOver,
+                drop:      handleDrop,
+                dragend:   handleDragEnd,
+                dragleave: handleDragLeave
+            };
+
+            for (const [type, handler] of Object.entries(events)) {
+                row[enable ? 'addEventListener' : 'removeEventListener'](type, handler);
+            }
+        });
+    }
+
+    /** 元の順序に戻す */
+    function restoreOriginalOrder() {
+        tbody.replaceChildren(...originalOrder);
+    }
+
+    /** --- ドラッグ処理 --- */
+    function handleDragStart(e) {
+        draggedElement = this;
+        this.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', this.innerHTML);
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (this !== draggedElement) this.classList.add('drag-over');
+    }
+
+    function handleDrop(e) {
+        e.stopPropagation();
+        if (draggedElement !== this) {
+            const rows = [...tbody.querySelectorAll('tr')];
+            const draggedIndex = rows.indexOf(draggedElement);
+            const targetIndex  = rows.indexOf(this);
+
+            this.parentNode.insertBefore(
+                draggedElement,
+                draggedIndex < targetIndex ? this.nextSibling : this
+            );
+        }
+    }
+
+    function handleDragEnd() {
+        this.classList.remove('dragging');
+        tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over'));
+    }
+
+    function handleDragLeave() {
+        this.classList.remove('drag-over');
+    }
+
+    /** hiddenフィールド更新 */
+    function updateHiddenFields() {
+        tbody.querySelectorAll('tr').forEach((row, i) => {
+            const idInput  = row.querySelector('input[name*=".Id"]');
+            const sortInput= row.querySelector('input[name*=".SortOrder"]');
+
+            if (idInput && sortInput) {
+                idInput.name   = `Assignments[${i}].Id`;
+                sortInput.name = `Assignments[${i}].SortOrder`;
+                sortInput.value= i + 1;
+            }
+        });
+    }
+});
+</script>
+}
