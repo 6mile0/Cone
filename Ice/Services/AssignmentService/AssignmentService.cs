@@ -16,13 +16,25 @@ public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
             .ToListAsync(cancellationToken);
     }
 
-    public Task<Assignments?> GetAssignmentByIdAsync(long assignmentId, CancellationToken cancellationToken)
+    public async Task<Assignments?> GetAssignmentByIdAsync(long assignmentId, CancellationToken cancellationToken)
     {
-        return iceDbContext.Assignments
+        return await iceDbContext.Assignments
+            .Include(a => a.StudentGroupAssignmentsProgress)
+            .Include(a => a.TicketAssignments)
             .FirstOrDefaultAsync(a => a.Id == assignmentId, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Assignments>> GetAssignmentsByGroupIdAsync(long groupId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Assignments>> GetAssignmentsByStudentGroupIdAsync(long studentGroupId, CancellationToken cancellationToken)
+    {
+        return await iceDbContext.Assignments
+            .Include(a => a.TicketAssignments)
+            .Include(a => a.StudentGroupAssignmentsProgress)
+            .Where(a => a.StudentGroupAssignmentsProgress.StudentGroupId == studentGroupId)
+            .OrderBy(a => a.SortOrder)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Assignments>> GetReleasedAssignmentByGroupId(long groupId, CancellationToken cancellationToken)
     {
         // グループごとに解放されている課題を取得
         var assignmentIds = iceDbContext.StudentGroupAssignmentsProgress

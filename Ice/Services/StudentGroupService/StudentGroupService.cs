@@ -45,24 +45,12 @@ public class StudentGroupService(IceDbContext iceDbContext) : IStudentGroupServi
         throw new NotImplementedException();
     }
 
-    public async Task<(StudentGroups Group, IReadOnlyList<StudentGroupAssignmentsProgress> Assignments, IReadOnlyList<Tickets> Tickets)> GetStudentGroupDetailAsync(long groupId, CancellationToken cancellationToken)
+    public async Task<StudentGroups> GetStudentGroupDetailAsync(long groupId, CancellationToken cancellationToken)
     {
         var group = await iceDbContext.StudentGroups
                         .FirstOrDefaultAsync(g => g.Id == groupId, cancellationToken)
                     ?? throw new EntityNotFoundException($"Student group with ID {groupId} not found.");
 
-        var assignments = await iceDbContext.StudentGroupAssignmentsProgress
-            .Include(a => a.Assignment)
-            .Where(a => a.StudentGroupId == groupId)
-            .ToListAsync(cancellationToken);
-
-        // 担当者を結合した結果を取得
-        var tickets = await iceDbContext.Tickets
-            .Include(t => t.TicketAdminUser)
-            .ThenInclude(ta => ta!.AdminUser)
-            .Where(t => t.StudentGroupId == groupId)
-            .ToListAsync(cancellationToken);
-
-        return (group, assignments, tickets);
+        return group;
     }
 }

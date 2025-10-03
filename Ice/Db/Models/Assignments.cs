@@ -21,4 +21,8 @@ public class Assignments
     
     [ConcurrencyCheck]
     public required DateTimeOffset UpdatedAt { get; set; }
+
+    // Navigation properties
+    public StudentGroupAssignmentsProgress StudentGroupAssignmentsProgress { get; set; } = null!;
+    public ICollection<TicketAssignments>? TicketAssignments { get; set; }
 }

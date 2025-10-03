@@ -43,12 +43,4 @@ public interface IStudentGroupService
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task DeleteStudentGroupAsync(long groupId, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Get detailed information about a student group including assignments and tickets.
-    /// </summary>
-    /// <param name="groupId">The ID of the student group to retrieve.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>The student group with related data.</returns>
-    Task<(StudentGroups Group, IReadOnlyList<StudentGroupAssignmentsProgress> Assignments, IReadOnlyList<Tickets> Tickets)> GetStudentGroupDetailAsync(long groupId, CancellationToken cancellationToken);
 }

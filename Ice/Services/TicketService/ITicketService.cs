@@ -12,6 +12,11 @@ public interface ITicketService
     Task<IReadOnlyList<Tickets>> GetAllTicketsAsync(CancellationToken cancellationToken);
     
     /// <summary>
+    /// Get tickets by student group ID.
+    /// </summary>
+    Task<IReadOnlyList<Tickets>> GetTicketsByStudentGroupIdAsync(long studentGroupId, CancellationToken cancellationToken);
+    
+    /// <summary>
     /// Create a new ticket.
     /// </summary>
     Task<AddTicketResDto> CreateTicketAsync(AddTicketDto addTicketDto, CancellationToken cancellationToken);

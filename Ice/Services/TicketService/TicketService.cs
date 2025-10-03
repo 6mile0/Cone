@@ -14,6 +14,15 @@ public class TicketService(IceDbContext iceDbContext): ITicketService
         return await iceDbContext.Tickets.ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Tickets>> GetTicketsByStudentGroupIdAsync(long studentGroupId, CancellationToken cancellationToken)
+    {
+        return await iceDbContext.Tickets
+            .Include(t => t.TicketAdminUser) // 担当者も含める
+            .ThenInclude(ta => ta!.AdminUser)
+            .Where(t => t.StudentGroupId == studentGroupId)
+            .ToListAsync(cancellationToken);
+    }
+    
     public async Task<AddTicketResDto> CreateTicketAsync(AddTicketDto addTicketDto, CancellationToken cancellationToken)
     {
         var transaction = await iceDbContext.Database.BeginTransactionAsync(cancellationToken);

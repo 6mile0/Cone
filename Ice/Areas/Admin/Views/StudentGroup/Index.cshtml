@@ -34,7 +34,6 @@
                     <td>@studentGroup.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</td>
                     <td>
                         <div class="btn-group" role="group">
-                            <a asp-action="Detail" asp-route-id="@studentGroup.Id" class="btn btn-sm btn-outline-info">詳細</a>
                             <a asp-action="EditStudentGroup" asp-route-id="@studentGroup.Id" class="btn btn-sm btn-outline-primary">編集</a>
                             <form method="post" asp-action="DeleteStudentGroup" style="display: inline;">
                                 <input type="hidden" name="studentGroupId" value="@studentGroup.Id" />
