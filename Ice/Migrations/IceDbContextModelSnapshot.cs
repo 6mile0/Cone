@@ -93,12 +93,19 @@ namespace Ice.Migrations
                     b.Property<long>("AssignmentId")
                         .HasColumnType("bigint");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<long>("StudentGroupId")
                         .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .IsConcurrencyToken()
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -159,6 +166,9 @@ namespace Ice.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AdminUserId");
+
+                    b.HasIndex("TicketId")
+                        .IsUnique();
 
                     b.HasIndex("TicketId", "AdminUserId")
                         .IsUnique();
@@ -226,6 +236,8 @@ namespace Ice.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("StudentGroupId");
+
                     b.ToTable("Tickets");
                 });
 
@@ -257,8 +269,8 @@ namespace Ice.Migrations
                         .IsRequired();
 
                     b.HasOne("Ice.Db.Models.Tickets", "Ticket")
-                        .WithMany()
-                        .HasForeignKey("TicketId")
+                        .WithOne("TicketAdminUser")
+                        .HasForeignKey("Ice.Db.Models.TicketAdminUsers", "TicketId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -284,6 +296,22 @@ namespace Ice.Migrations
                     b.Navigation("Assignment");
 
                     b.Navigation("Ticket");
+                });
+
+            modelBuilder.Entity("Ice.Db.Models.Tickets", b =>
+                {
+                    b.HasOne("Ice.Db.Models.StudentGroups", "StudentGroup")
+                        .WithMany()
+                        .HasForeignKey("StudentGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StudentGroup");
+                });
+
+            modelBuilder.Entity("Ice.Db.Models.Tickets", b =>
+                {
+                    b.Navigation("TicketAdminUser");
                 });
 #pragma warning restore 612, 618
         }

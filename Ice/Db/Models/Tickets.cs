@@ -23,4 +23,8 @@ public class Tickets
     
     [ConcurrencyCheck]
     public required DateTimeOffset UpdatedAt { get; set; }
+    
+    // Navigation property
+    public StudentGroups? StudentGroup { get; set; }
+    public TicketAdminUsers? TicketAdminUser { get; set; }
 }

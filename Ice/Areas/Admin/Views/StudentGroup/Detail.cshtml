@@ -1,0 +1,124 @@
+@model Ice.Areas.Admin.ViewModels.StudentGroup.StudentGroupDetailViewModel
+@{
+    ViewData["Title"] = "学生グループ詳細 | ice";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>@Model.GroupName</h1>
+        <div>
+            <a asp-action="Index" class="btn btn-secondary">一覧に戻る</a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">課題進捗状況</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.AssignmentProgress.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                        <tr>
+                            <th>課題名</th>
+                            <th>ステータス</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var assignment in Model.AssignmentProgress)
+                        {
+                            <tr>
+                                <td>@assignment.AssignmentName</td>
+                                <td>
+                                    @switch (assignment.Status)
+                                    {
+                                        case "未着手":
+                                            <span class="badge bg-secondary">@assignment.Status</span>
+                                            break;
+                                        case "進行中":
+                                            <span class="badge bg-primary">@assignment.Status</span>
+                                            break;
+                                        case "完了":
+                                            <span class="badge bg-success">@assignment.Status</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-warning">@assignment.Status</span>
+                                            break;
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info" role="alert">
+                    課題が割り当てられていません。
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">チケット</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Tickets.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                        <tr>
+                            <th>タイトル</th>
+                            <th>ステータス</th>
+                            <th>担当者</th>
+                            <th>作成日時</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var ticket in Model.Tickets)
+                        {
+                            <tr>
+                                <td>@ticket.Title</td>
+                                <td>
+                                    @switch (ticket.Status)
+                                    {
+                                        case "未対応":
+                                            <span class="badge bg-danger">@ticket.Status</span>
+                                            break;
+                                        case "対応中":
+                                            <span class="badge bg-warning text-dark">@ticket.Status</span>
+                                            break;
+                                        case "解決済み":
+                                            <span class="badge bg-success">@ticket.Status</span>
+                                            break;
+                                        case "クローズ":
+                                            <span class="badge bg-secondary">@ticket.Status</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-info">@ticket.Status</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>@ticket.AssignedTo?.FullName</td>
+                                <td>@ticket.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info" role="alert">
+                    チケットがありません。
+                </div>
+            }
+        </div>
+    </div>
+</div>

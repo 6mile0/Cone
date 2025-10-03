@@ -18,6 +18,12 @@ public class StudentGroupAssignmentsProgress
 
     [Required] public required AssignmentProgress Status { get; set; } = AssignmentProgress.NotStarted;
     
+    [Required]
+    public required DateTimeOffset CreatedAt { get; set; }
+    
+    [ConcurrencyCheck]
+    public required DateTimeOffset UpdatedAt { get; set; }
+    
     // Navigation properties
     public StudentGroups? StudentGroup { get; set; }
     public Assignments? Assignment { get; set; }
