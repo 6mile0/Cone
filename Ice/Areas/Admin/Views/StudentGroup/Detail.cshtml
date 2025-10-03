@@ -105,7 +105,7 @@
                                             break;
                                     }
                                 </td>
-                                <td>@ticket.AssignedTo?.FullName</td>
+                                <td>@if (string.IsNullOrEmpty(ticket.AssignedTo?.FullName)) { <em>未割当</em> } else { @ticket.AssignedTo.FullName }</td>
                                 <td>@ticket.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
                             </tr>
                         }

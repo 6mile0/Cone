@@ -1,6 +1,13 @@
-﻿namespace Ice.Areas.Admin.Controllers;
+﻿using Microsoft.AspNetCore.Mvc;
 
-public class TicketController
+namespace Ice.Areas.Admin.Controllers;
+
+[Area("admin")]
+[Route("[area]/tickets")]
+public class TicketController: Controller
 {
-    
+    public IActionResult Index()
+    {
+        return View();
+    }
 }
