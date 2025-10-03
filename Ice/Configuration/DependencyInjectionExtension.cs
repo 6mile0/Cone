@@ -1,4 +1,5 @@
-﻿using Ice.Services.AssignmentService;
+﻿using Ice.Services.AdminUserService;
+using Ice.Services.AssignmentService;
 
 namespace Ice.Configuration;
 
@@ -9,6 +10,7 @@ public static class DependencyInjectionExtension
         // Register custom services here
         // services.AddScoped<IMyService, MyServiceImplementation>();
         services.AddScoped<IAssignmentService, AssignmentService>();
+        services.AddScoped<IAdminUserService, AdminUserService>();
         return services;
     }
 }
