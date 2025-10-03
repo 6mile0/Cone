@@ -88,17 +88,14 @@
                                 <td>
                                     @switch (ticket.Status)
                                     {
-                                        case "未対応":
-                                            <span class="badge bg-danger">@ticket.Status</span>
-                                            break;
                                         case "対応中":
                                             <span class="badge bg-warning text-dark">@ticket.Status</span>
                                             break;
                                         case "解決済み":
                                             <span class="badge bg-success">@ticket.Status</span>
                                             break;
-                                        case "クローズ":
-                                            <span class="badge bg-secondary">@ticket.Status</span>
+                                        case "トラブルなどで保留中":
+                                            <span class="badge bg-danger">@ticket.Status</span>
                                             break;
                                         default:
                                             <span class="badge bg-info">@ticket.Status</span>

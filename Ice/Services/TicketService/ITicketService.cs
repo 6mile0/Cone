@@ -9,7 +9,7 @@ public interface ITicketService
     /// <summary>
     /// Gets all ticket, 
     /// </summary>
-    Task<IReadOnlyList<Tickets>> GetAllTicketsAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyList<Tickets?>> GetAllTicketsAsync(CancellationToken cancellationToken);
     
     /// <summary>
     /// Get tickets by student group ID.
@@ -30,4 +30,9 @@ public interface ITicketService
     /// Delete a ticket by its ID.
     /// </summary>
     Task DeleteTicketAsync(long ticketId, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Check if a student group can add a new ticket.
+    /// </summary>
+    Task<Tickets?> IsAbleAddTicketAsync(long studentGroupId, CancellationToken cancellationToken);
 }

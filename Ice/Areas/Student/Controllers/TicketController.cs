@@ -24,6 +24,8 @@ public class TicketController(ITicketService ticketService, IAssignmentService a
         }
 
         var assignments = await assignmentService.GetAllAssignmentsAsync(cancellationToken);
+        var isAbleAddTicket = await ticketService.IsAbleAddTicketAsync(studentGroupId.Value, cancellationToken);
+            
         var enumerableAssignments = assignments
             .OrderBy(a => a.SortOrder)
             .Select(a => new SelectListItem
@@ -36,7 +38,9 @@ public class TicketController(ITicketService ticketService, IAssignmentService a
         return View("Add", new AddTicketViewModel
         {
             StudentGroupId = studentGroupId.Value,
-            Assignments = enumerableAssignments
+            Assignments = enumerableAssignments,
+            IsAbleAddTicket = isAbleAddTicket != null,
+            StaffName = isAbleAddTicket?.TicketAdminUser?.AdminUser?.FullName
         });
     }
 
@@ -46,6 +50,14 @@ public class TicketController(ITicketService ticketService, IAssignmentService a
         CancellationToken cancellationToken
     )
     {
+        var isAbleAddTicket = await ticketService.IsAbleAddTicketAsync(request.StudentGroupId, cancellationToken);
+        
+        if (isAbleAddTicket != null)
+        {
+            flashMessage.Danger("現在対応中のチケットが存在するため、新しいチケットを追加できません。対応が完了するまでお待ちください。");
+            return RedirectToAction("AddTicket", new { studentGroupId = request.StudentGroupId });
+        }
+        
         if (!ModelState.IsValid)
         {
             var assignments = await assignmentService.GetAllAssignmentsAsync(cancellationToken);
@@ -67,9 +79,7 @@ public class TicketController(ITicketService ticketService, IAssignmentService a
             });
         }
 
-        var res = await ticketService.CreateTicketAsync(request, cancellationToken);
-
-        flashMessage.Confirmation($"{res.Admin.FullName} さんが向かいます。しばらくお待ちください。");
+        await ticketService.CreateTicketAsync(request, cancellationToken);
         return RedirectToAction("AddTicket", "Ticket", new { studentGroupId = request.StudentGroupId });
     }
 }

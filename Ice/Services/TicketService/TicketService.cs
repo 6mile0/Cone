@@ -10,7 +10,7 @@ namespace Ice.Services.TicketService;
 
 public class TicketService(IceDbContext iceDbContext): ITicketService
 {
-    public async Task<IReadOnlyList<Tickets>> GetAllTicketsAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Tickets?>> GetAllTicketsAsync(CancellationToken cancellationToken)
     {
         return await iceDbContext.Tickets.ToListAsync(cancellationToken);
     }
@@ -18,9 +18,10 @@ public class TicketService(IceDbContext iceDbContext): ITicketService
     public async Task<IReadOnlyList<Tickets>> GetTicketsByStudentGroupIdAsync(long studentGroupId, CancellationToken cancellationToken)
     {
         return await iceDbContext.Tickets
-            .Include(t => t.TicketAdminUser) // 担当者も含める
-            .ThenInclude(ta => ta!.AdminUser)
             .Where(t => t.StudentGroupId == studentGroupId)
+            .Include(t => t.TicketAdminUser)
+            .ThenInclude(tau => tau!.AdminUser)
+            .OrderByDescending(t => t.CreatedAt)
             .ToListAsync(cancellationToken);
     }
     
@@ -41,7 +42,7 @@ public class TicketService(IceDbContext iceDbContext): ITicketService
         {
             Title = addTicketDto.Title,
             StudentGroupId = addTicketDto.StudentGroupId,
-            Status = TicketStatus.Open, // 初期はOpen
+            Status = TicketStatus.InProgress, // 初期はInProgress
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -81,7 +82,16 @@ public class TicketService(IceDbContext iceDbContext): ITicketService
     {
         throw new NotImplementedException();
     }
-    
+
+    public async Task<Tickets?> IsAbleAddTicketAsync(long studentGroupId, CancellationToken cancellationToken)
+    {
+        // 未解決のチケットが存在するか確認
+        return await iceDbContext.Tickets
+            .Include(t => t.TicketAdminUser)
+            .ThenInclude(tau => tau!.AdminUser)
+            .FirstOrDefaultAsync(t => t.StudentGroupId == studentGroupId && t.Status == TicketStatus.InProgress, cancellationToken);
+    }
+
     private async Task<AdminUsers> AssignTutorToTicketAsync(CancellationToken cancellationToken)
     {
         // 講師ごとの担当チケット数を一度のクエリで取得

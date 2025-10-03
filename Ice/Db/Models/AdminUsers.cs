@@ -10,7 +10,7 @@ public class AdminUsers
     
     [Required]
     [MaxLength(100)]
-    public required string FullName { get; set; }
+    public required string? FullName { get; set; }
     
     [Required]
     [EnumDataType(typeof(TutorTypes))]

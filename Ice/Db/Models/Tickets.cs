@@ -16,7 +16,7 @@ public class Tickets
     public required string Title { get; set; }
     
     [Required]
-    public required TicketStatus Status { get; set; } = TicketStatus.Open;
+    public required TicketStatus Status { get; set; } = TicketStatus.InProgress;
     
     [Required]
     public required DateTimeOffset CreatedAt { get; set; }

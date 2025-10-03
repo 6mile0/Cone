@@ -101,10 +101,9 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
     {
         return status switch
         {
-            TicketStatus.Open => "未対応",
             TicketStatus.InProgress => "対応中",
             TicketStatus.Resolved => "解決済み",
-            TicketStatus.Closed => "クローズ",
+            TicketStatus.Pending => "トラブルなどで保留中",
             _ => "不明"
         };
     }
