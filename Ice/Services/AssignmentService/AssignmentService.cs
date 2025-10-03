@@ -1,6 +1,7 @@
 ﻿using Ice.Areas.Admin.Dtos.Req;
 using Ice.Db;
 using Ice.Db.Models;
+using Ice.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ice.Services.AssignmentService;
@@ -20,7 +21,19 @@ public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
             .FirstOrDefaultAsync(a => a.Id == assignmentId, cancellationToken);
     }
 
-    public Task<Assignments> CreateAssignmentAsync(AddAssignmentDto addAssignmentDto, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Assignments>> GetAssignmentsByGroupIdAsync(long groupId, CancellationToken cancellationToken)
+    {
+        // グループごとに解放されている課題を取得
+        var assignmentIds = iceDbContext.StudentGroupAssignmentsProgress
+            .Where(sgap => sgap.StudentGroupId == groupId);
+        
+        return await iceDbContext.Assignments
+            .Where(a => assignmentIds.Any(sgap => sgap.AssignmentId == a.Id))
+            .OrderBy(a => a.SortOrder)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Assignments> CreateAssignmentAsync(AddAssignmentDto addAssignmentDto, CancellationToken cancellationToken)
     {
         // 最大値のSortOrderを取得して+1する
         var maxSortOrder = iceDbContext.Assignments
@@ -34,14 +47,11 @@ public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow
         };
+        
+        await iceDbContext.Assignments.AddAsync(assignment, cancellationToken);
+        await iceDbContext.SaveChangesAsync(cancellationToken);
 
-        return iceDbContext.Assignments.AddAsync(assignment, cancellationToken)
-            .AsTask()
-            .ContinueWith(t =>
-            {
-                iceDbContext.SaveChangesAsync(cancellationToken).Wait(cancellationToken);
-                return t.Result.Entity;
-            }, cancellationToken);
+        return assignment;
     }
 
     public async Task<Assignments> EditAssignmentAsync(Assignments assignment, CancellationToken cancellationToken)
@@ -67,5 +77,25 @@ public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
     public Task DeleteAssignmentAsync(long assignmentId, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
+    }
+    
+    private async Task CreateInitialAssignmentsAsync(Assignments assignment, CancellationToken cancellationToken)
+    {
+        // 各StudentGroupsに対して、作成する課題を初期ステータスで追加
+        var studentGroups = await iceDbContext.StudentGroups.ToListAsync(cancellationToken);
+        
+        // グループ内で最初の課題はNotStartedで追加、他はLockedで追加する場合
+        foreach (var (studentGroup, index) in studentGroups.Select((value, i) => (value, i)))
+        {
+            var status = index == 0 ? AssignmentProgress.NotStarted : AssignmentProgress.InProgress;
+            var studentGroupAssignment = new StudentGroupAssignmentsProgress
+            {
+                StudentGroupId = studentGroup.Id,
+                AssignmentId = assignment.Id,
+                Status = status
+            };
+            await iceDbContext.StudentGroupAssignmentsProgress.AddAsync(studentGroupAssignment, cancellationToken);
+            await iceDbContext.SaveChangesAsync(cancellationToken);
+        }
     }
 }

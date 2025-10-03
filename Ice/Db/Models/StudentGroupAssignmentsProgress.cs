@@ -8,7 +8,7 @@ namespace Ice.Db.Models;
 public class StudentGroupAssignmentsProgress
 {
     [Key]
-    public required long Id { get; set; }
+    public long Id { get; set; }
     
     [Required]
     public required long StudentGroupId { get; set; }

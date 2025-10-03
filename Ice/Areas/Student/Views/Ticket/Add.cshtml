@@ -1,0 +1,36 @@
+@model Ice.Areas.Student.ViewModels.AddTicketViewModel
+@{
+    ViewData["Title"] = "TA/SAを呼ぶ | ice";
+}
+@addTagHelper *, Vereyon.Web.FlashMessage
+
+<div class="container mt-4">
+    <h1 class="mb-4">TA/SAを呼ぶ</h1>
+    <flash dismissable="true" />
+
+    <form method="post" asp-action="AddTicket">
+        <input type="hidden" asp-for="StudentGroupId" value="@Model.StudentGroupId" />
+
+        <div class="mb-3">
+            <label asp-for="AssignmentId" class="form-label">課題</label>
+            <select asp-for="AssignmentId" asp-items="Model.Assignments" class="form-select" required>
+                <option value="">選択してください</option>
+            </select>
+            <span asp-validation-for="AssignmentId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label">困ってること (任意)</label>
+            <textarea asp-for="Title" type="text" class="form-control" placeholder="〇〇というエラーが表示されて進めることができません"></textarea>
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="d-flex justify-content-center">
+            <button type="submit" class="btn btn-primary btn-lg">呼び出す</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

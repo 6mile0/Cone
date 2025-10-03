@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Ice.Areas.Admin.Controllers;
 
-[Area("Admin")]
+[Area("admin")]
 [Route("[area]/users")]
 public class AdminUserController(IAdminUserService adminUserService): Controller
 {

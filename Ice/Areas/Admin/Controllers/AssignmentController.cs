@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Ice.Areas.Admin.Controllers;
 
-[Area("Admin")]
+[Area("admin")]
 [Route("[area]/assignments")]
 public class AssignmentController(IAssignmentService assignmentService, ILogger<AssignmentController> logger) : Controller
 {
