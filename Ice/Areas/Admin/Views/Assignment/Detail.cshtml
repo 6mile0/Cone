@@ -74,4 +74,78 @@
             }
         </div>
     </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">割り当て済み学生グループ</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.AssignedStudentGroups.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>グループ名</th>
+                                <th style="width: 150px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var group in Model.AssignedStudentGroups)
+                            {
+                                <tr>
+                                    <td>
+                                        <a asp-controller="StudentGroup" asp-action="Detail" asp-route-id="@group.Id">@group.GroupName</a>
+                                    </td>
+                                    <td>
+                                        <form asp-action="UnassignStudentGroup" asp-route-assignmentId="@Model.Id" asp-route-studentGroupId="@group.Id" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('この学生グループから課題の割り当てを解除しますか？');">解除</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info mb-0" role="alert">
+                    まだ学生グループに割り当てられていません
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">学生グループに割り当て</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.UnassignedStudentGroups.Any())
+            {
+                <form asp-action="AssignStudentGroups" asp-route-assignmentId="@Model.Id" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">割り当てる学生グループを選択</label>
+                        @foreach (var group in Model.UnassignedStudentGroups)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="studentGroupIds" value="@group.Id" id="group-@group.Id">
+                                <label class="form-check-label" for="group-@group.Id">
+                                    @group.GroupName
+                                </label>
+                            </div>
+                        }
+                    </div>
+                    <button type="submit" class="btn btn-primary">割り当て</button>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-info mb-0" role="alert">
+                    すべての学生グループに割り当て済みです
+                </div>
+            }
+        </div>
+    </div>
 </div>

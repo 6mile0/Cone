@@ -1,3 +1,5 @@
+using Ice.Areas.Admin.ViewModels.StudentGroup;
+
 namespace Ice.Areas.Admin.ViewModels.Assignment;
 
 public class AssignmentDetailViewModel
@@ -13,4 +15,8 @@ public class AssignmentDetailViewModel
     public required DateTimeOffset CreatedAt { get; init; }
 
     public required DateTimeOffset UpdatedAt { get; init; }
+
+    public List<StudentGroupViewModel> AssignedStudentGroups { get; init; } = [];
+
+    public List<StudentGroupViewModel> UnassignedStudentGroups { get; init; } = [];
 }

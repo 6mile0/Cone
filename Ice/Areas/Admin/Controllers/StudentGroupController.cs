@@ -73,12 +73,16 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
         var assignments = await assignmentService.GetAssignmentsByStudentGroupIdAsync(group.Id, cancellationToken);
         var tickets = await ticketService.GetTicketsByStudentGroupIdAsync(group.Id, cancellationToken);
 
-        var assignmentProgress = assignments.Select(a => new AssignmentProgressViewModel
+        var assignmentProgress = assignments.Select(a =>
         {
-            AssignmentId = a.Id,
-            AssignmentName = a.Name,
-            Status = GetAssignmentProgressText(a.StudentGroupAssignmentsProgress.Status),
-            StatusEnum = a.StudentGroupAssignmentsProgress.Status
+            var progress = a.StudentGroupAssignmentsProgress?.FirstOrDefault(p => p.StudentGroupId == group.Id);
+            return new AssignmentProgressViewModel
+            {
+                AssignmentId = a.Id,
+                AssignmentName = a.Name,
+                Status = progress != null ? GetAssignmentProgressText(progress.Status) : "不明",
+                StatusEnum = progress?.Status ?? AssignmentProgress.NotStarted
+            };
         }).ToImmutableList();
 
         var viewModel = new StudentGroupDetailViewModel

@@ -1,13 +1,16 @@
 ﻿using Ice.Areas.Admin.Dtos.Req;
 using Ice.Areas.Admin.ViewModels.Assignment;
+using Ice.Areas.Admin.ViewModels.StudentGroup;
 using Ice.Services.AssignmentService;
+using Ice.Services.StudentGroupService;
 using Microsoft.AspNetCore.Mvc;
+using Vereyon.Web;
 
 namespace Ice.Areas.Admin.Controllers;
 
 [Area("admin")]
 [Route("[area]/assignments")]
-public class AssignmentController(IAssignmentService assignmentService) : Controller
+public class AssignmentController(IAssignmentService assignmentService, IStudentGroupService studentGroupService, IFlashMessage flashMessage) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -87,6 +90,10 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
             return NotFound();
         }
 
+        var assignedGroups = await assignmentService.GetAssignedStudentGroupsAsync(id, cancellationToken);
+        var allGroups = await studentGroupService.GetAllStudentGroupsAsync(cancellationToken);
+        var unassignedGroups = allGroups.Where(g => assignedGroups.All(ag => ag.Id != g.Id)).ToList();
+
         var viewModel = new AssignmentDetailViewModel
         {
             Id = assignment.Id,
@@ -94,7 +101,21 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
             Description = assignment.Description,
             SortOrder = assignment.SortOrder,
             CreatedAt = assignment.CreatedAt,
-            UpdatedAt = assignment.UpdatedAt
+            UpdatedAt = assignment.UpdatedAt,
+            AssignedStudentGroups = assignedGroups.Select(g => new StudentGroupViewModel
+            {
+                Id = g.Id,
+                GroupName = g.GroupName,
+                CreatedAt = g.CreatedAt,
+                UpdatedAt = g.UpdatedAt
+            }).ToList(),
+            UnassignedStudentGroups = unassignedGroups.Select(g => new StudentGroupViewModel
+            {
+                Id = g.Id,
+                GroupName = g.GroupName,
+                CreatedAt = g.CreatedAt,
+                UpdatedAt = g.UpdatedAt
+            }).ToList()
         };
 
         return View("Detail", viewModel);
@@ -109,8 +130,7 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
         {
             return NotFound();
         }
-
-        ViewData["AssignmentId"] = assignment.Id;
+        
         return View("Edit", new UpdateAssignmentViewModel
         {
             AssignmentId = assignment.Id,
@@ -128,7 +148,6 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
     {
         if (!ModelState.IsValid)
         {
-            ViewData["AssignmentId"] = id;
             return View("Edit", model);
         }
 
@@ -143,5 +162,47 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
         await assignmentService.EditAssignmentAsync(assignment, cancellationToken);
 
         return RedirectToAction("Detail", new { id });
+    }
+
+    [HttpPost("{assignmentId:long}/assign")]
+    public async Task<IActionResult> AssignStudentGroups(
+        long assignmentId,
+        [FromForm] List<long> studentGroupIds,
+        CancellationToken cancellationToken
+    )
+    {
+        var assignment = await assignmentService.GetAssignmentByIdAsync(assignmentId, cancellationToken);
+        if (assignment == null)
+        {
+            return NotFound();
+        }
+
+        if (studentGroupIds.Count == 0)
+        {
+            flashMessage.Warning("学生グループを選択してください。");
+            return RedirectToAction("Detail", new { id = assignmentId });
+        }
+
+        await assignmentService.AssignToStudentGroupsAsync(assignmentId, studentGroupIds, cancellationToken);
+        flashMessage.Info("学生グループに課題を割り当てました。");
+        return RedirectToAction("Detail", new { id = assignmentId });
+    }
+
+    [HttpPost("{assignmentId:long}/unassign/{studentGroupId:long}")]
+    public async Task<IActionResult> UnassignStudentGroup(
+        long assignmentId,
+        long studentGroupId,
+        CancellationToken cancellationToken
+    )
+    {
+        var assignment = await assignmentService.GetAssignmentByIdAsync(assignmentId, cancellationToken);
+        if (assignment == null)
+        {
+            return NotFound();
+        }
+
+        await assignmentService.UnassignFromStudentGroupAsync(assignmentId, studentGroupId, cancellationToken);
+        flashMessage.Info("学生グループから課題の割り当てを解除しました。");
+        return RedirectToAction("Detail", new { id = assignmentId });
     }
 }
