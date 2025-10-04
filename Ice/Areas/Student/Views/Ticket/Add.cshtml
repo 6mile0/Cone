@@ -12,7 +12,7 @@
         <input type="hidden" asp-for="StudentGroupId" value="@Model.StudentGroupId" />
 
         <div class="mb-3">
-            <label asp-for="AssignmentId" class="form-label">課題</label>
+            <label asp-for="AssignmentId" class="form-label">関連する課題 <span class="text-danger">*</span></label>
             <select asp-for="AssignmentId" asp-items="Model.Assignments" class="form-select" required>
                 <option value="">選択してください</option>
             </select>
@@ -20,7 +20,7 @@
         </div>
 
         <div class="mb-3">
-            <label asp-for="Title" class="form-label">困ってること (任意)</label>
+            <label asp-for="Title" class="form-label">困ってること <span class="text-danger">*</span></label>
             <textarea asp-for="Title" type="text" class="form-control" placeholder="〇〇というエラーが表示されて進めることができません"></textarea>
             <span asp-validation-for="Title" class="text-danger"></span>
         </div>

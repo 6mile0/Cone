@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "課題一覧 | ice";
 }
+@addTagHelper *, Vereyon.Web.FlashMessage
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -11,10 +12,7 @@
             <a asp-action="AddAssignment" class="btn btn-primary">課題を追加する</a>
         </div>
     </div>
-
-    <div class="alert alert-warning" role="alert">
-        先に学生グループを作成してから、課題を追加してください
-    </div>
+    <flash dismissable="true" />
 
     <form id="sortForm" method="post" asp-action="SortAssignments">
         <div id="sortAlert" class="alert alert-info" style="display: none;">
@@ -41,7 +39,9 @@
                 {
                     <tr data-id="@assignment.Id" data-index="@index" draggable="false">
                         <td class="drag-handle" style="cursor: default;">⋮⋮</td>
-                        <td>@assignment.Name</td>
+                        <td>
+                            <a asp-action="Detail" asp-route-id="@assignment.Id">@assignment.Name</a>
+                        </td>
                         <td>@assignment.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
                         <td>@assignment.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</td>
                         <input type="hidden" name="Assignments[@index].Id" value="@assignment.Id"/>

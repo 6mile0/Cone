@@ -13,11 +13,10 @@ public class StudentGroupService(IceDbContext iceDbContext) : IStudentGroupServi
         return await iceDbContext.StudentGroups.ToListAsync(cancellationToken);
     }
 
-    public async Task<StudentGroups> GetStudentGroupByIdAsync(long groupId, CancellationToken cancellationToken)
+    public async Task<StudentGroups?> GetStudentGroupByIdAsync(long? groupId, CancellationToken cancellationToken)
     {
         return await iceDbContext.StudentGroups
-                   .FirstOrDefaultAsync(g => g.Id == groupId, cancellationToken)
-               ?? throw new EntityNotFoundException($"Student group with ID {groupId} not found.");
+            .FirstOrDefaultAsync(g => g.Id == groupId, cancellationToken);
     }
 
     public async Task<StudentGroups> CreateStudentGroupAsync(AddStudentGroupDto addStudentGroupDto, CancellationToken cancellationToken)
@@ -52,5 +51,22 @@ public class StudentGroupService(IceDbContext iceDbContext) : IStudentGroupServi
                     ?? throw new EntityNotFoundException($"Student group with ID {groupId} not found.");
 
         return group;
+    }
+
+    public async Task UpdateAssignmentProgressAsync(UpdateAssignmentProgressDto updateAssignmentProgressDto, CancellationToken cancellationToken)
+    {
+        var progress = await iceDbContext.StudentGroupAssignmentsProgress
+            .FirstOrDefaultAsync(p => p.StudentGroupId == updateAssignmentProgressDto.StudentGroupId
+                && p.AssignmentId == updateAssignmentProgressDto.AssignmentId, cancellationToken);
+
+        if (progress == null)
+        {
+            throw new EntityNotFoundException($"Assignment progress not found for student group {updateAssignmentProgressDto.StudentGroupId} and assignment {updateAssignmentProgressDto.AssignmentId}.");
+        }
+
+        progress.Status = updateAssignmentProgressDto.Status;
+        progress.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await iceDbContext.SaveChangesAsync(cancellationToken);
     }
 }

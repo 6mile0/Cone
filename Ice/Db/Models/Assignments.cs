@@ -23,6 +23,6 @@ public class Assignments
     public required DateTimeOffset UpdatedAt { get; set; }
 
     // Navigation properties
-    public StudentGroupAssignmentsProgress StudentGroupAssignmentsProgress { get; set; } = null!;
+    public ICollection<StudentGroupAssignmentsProgress>? StudentGroupAssignmentsProgress { get; set; }
     public ICollection<TicketAssignments>? TicketAssignments { get; set; }
 }

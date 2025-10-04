@@ -3,6 +3,7 @@ using System;
 using Ice.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ice.Migrations
 {
     [DbContext(typeof(IceDbContext))]
-    partial class IceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251004014002_addRemarkField")]
+    partial class addRemarkField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -109,7 +112,8 @@ namespace Ice.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssignmentId");
+                    b.HasIndex("AssignmentId")
+                        .IsUnique();
 
                     b.HasIndex("StudentGroupId", "AssignmentId")
                         .IsUnique();
@@ -190,9 +194,6 @@ namespace Ice.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long>("StudentGroupId")
-                        .HasColumnType("bigint");
-
                     b.Property<long>("TicketId")
                         .HasColumnType("bigint");
 
@@ -204,9 +205,7 @@ namespace Ice.Migrations
 
                     b.HasIndex("AssignmentId");
 
-                    b.HasIndex("StudentGroupId");
-
-                    b.HasIndex("TicketId", "AssignmentId", "StudentGroupId")
+                    b.HasIndex("TicketId", "AssignmentId")
                         .IsUnique();
 
                     b.ToTable("TicketAssignments");
@@ -253,8 +252,8 @@ namespace Ice.Migrations
             modelBuilder.Entity("Ice.Db.Models.StudentGroupAssignmentsProgress", b =>
                 {
                     b.HasOne("Ice.Db.Models.Assignments", "Assignment")
-                        .WithMany("StudentGroupAssignmentsProgress")
-                        .HasForeignKey("AssignmentId")
+                        .WithOne("StudentGroupAssignmentsProgress")
+                        .HasForeignKey("Ice.Db.Models.StudentGroupAssignmentsProgress", "AssignmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -296,12 +295,6 @@ namespace Ice.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Ice.Db.Models.StudentGroups", "StudentGroup")
-                        .WithMany()
-                        .HasForeignKey("StudentGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Ice.Db.Models.Tickets", "Ticket")
                         .WithMany()
                         .HasForeignKey("TicketId")
@@ -309,8 +302,6 @@ namespace Ice.Migrations
                         .IsRequired();
 
                     b.Navigation("Assignment");
-
-                    b.Navigation("StudentGroup");
 
                     b.Navigation("Ticket");
                 });
@@ -328,15 +319,15 @@ namespace Ice.Migrations
 
             modelBuilder.Entity("Ice.Db.Models.Assignments", b =>
                 {
-                    b.Navigation("StudentGroupAssignmentsProgress");
+                    b.Navigation("StudentGroupAssignmentsProgress")
+                        .IsRequired();
 
                     b.Navigation("TicketAssignments");
                 });
 
             modelBuilder.Entity("Ice.Db.Models.Tickets", b =>
                 {
-                    b.Navigation("TicketAdminUser")
-                        .IsRequired();
+                    b.Navigation("TicketAdminUser");
                 });
 #pragma warning restore 612, 618
         }

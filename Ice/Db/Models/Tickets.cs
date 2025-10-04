@@ -18,6 +18,9 @@ public class Tickets
     [Required]
     public required TicketStatus Status { get; set; } = TicketStatus.InProgress;
     
+    [MaxLength(2000)]
+    public string? Remark { get; set; } = string.Empty;
+    
     [Required]
     public required DateTimeOffset CreatedAt { get; set; }
     
@@ -25,6 +28,6 @@ public class Tickets
     public required DateTimeOffset UpdatedAt { get; set; }
     
     // Navigation property
-    public StudentGroups? StudentGroup { get; set; }
-    public TicketAdminUsers? TicketAdminUser { get; set; }
+    public StudentGroups StudentGroup { get; set; }　= null!;
+    public TicketAdminUsers TicketAdminUser { get; set; } = null!;
 }

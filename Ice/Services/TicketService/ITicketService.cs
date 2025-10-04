@@ -1,4 +1,5 @@
-﻿using Ice.Areas.Student.Dtos.Req;
+﻿using Ice.Areas.Admin.Dtos.Req;
+using Ice.Areas.Student.Dtos.Req;
 using Ice.Areas.Student.Dtos.Res;
 using Ice.Db.Models;
 
@@ -7,10 +8,15 @@ namespace Ice.Services.TicketService;
 public interface ITicketService
 {
     /// <summary>
-    /// Gets all ticket, 
+    /// Gets all ticket,
     /// </summary>
     Task<IReadOnlyList<Tickets?>> GetAllTicketsAsync(CancellationToken cancellationToken);
-    
+
+    /// <summary>
+    /// Get a ticket by its ID.
+    /// </summary>
+    Task<Tickets?> GetTicketByIdAsync(long ticketId, CancellationToken cancellationToken);
+
     /// <summary>
     /// Get tickets by student group ID.
     /// </summary>
@@ -24,7 +30,7 @@ public interface ITicketService
     /// <summary>
     /// Update an existing ticket.
     /// </summary>
-    Task<Tickets> UpdateTicketAsync(Tickets ticket, CancellationToken cancellationToken);
+    Task<Tickets> UpdateTicketAsync(UpdateTicketReqDto req, CancellationToken cancellationToken);
     
     /// <summary>
     /// Delete a ticket by its ID.
@@ -35,4 +41,9 @@ public interface ITicketService
     /// Check if a student group can add a new ticket.
     /// </summary>
     Task<Tickets?> IsAbleAddTicketAsync(long studentGroupId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Assign a ticket to an admin user.
+    /// </summary>
+    Task<Tickets> AssignTicketAsync(AssignTicketReqDto req, CancellationToken cancellationToken);
 }

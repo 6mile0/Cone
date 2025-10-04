@@ -1,0 +1,47 @@
+@using Ice.Enums
+@model Ice.Areas.Admin.ViewModels.Ticket.AssignTicketViewModel
+@{
+    ViewData["Title"] = "担当者変更 | ice";
+}
+@addTagHelper *, Vereyon.Web.FlashMessage
+
+<div class="container mt-4">
+    <h1 class="mb-4">チケット担当者変更</h1>
+    <flash dismissable="true"/>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            「<b>@Model.StudentGroupName</b>」のチケット「<b>@Model.Title</b>」の担当者を変更します。<br/>
+            以下のフォームから担当者を選択し、「変更」ボタンを押してください
+        </div>
+    </div>
+
+    <form method="post" asp-action="AssignTicket" asp-route-studentGroupId="@Model.StudentGroupId"
+          asp-route-ticketId="@Model.TicketId">
+        <input type="hidden" asp-for="TicketId"/>
+        <input type="hidden" asp-for="StudentGroupId"/>
+
+        <div class="mb-3">
+            <label asp-for="AdminUserId" class="form-label">担当者</label>
+            <select asp-for="AdminUserId" class="form-select" required>
+                <option value="">選択してください</option>
+                @foreach (var admin in Model.AdminUsers)
+                {
+                    <option value="@admin.Id" selected="@(admin.Id == Model.AdminUserId)">
+                        @admin.FullName (@(admin.TutorType == TutorTypes.TeachingAssistant ? "TA" : "SA"))
+                    </option>
+                }
+            </select>
+            <span asp-validation-for="AdminUserId" class="text-danger"></span>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">変更</button>
+            <a asp-action="Detail" asp-route-id="@Model.StudentGroupId" class="btn btn-secondary">キャンセル</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}
