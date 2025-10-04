@@ -51,6 +51,7 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
     {
         if (!ModelState.IsValid)
         {
+            flashMessage.Danger("入力に誤りがあります。");
             return View("Add");
         }
 
@@ -58,6 +59,8 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
         {
             GroupName = model.GroupName
         }, cancellationToken);
+        
+        flashMessage.Info("学生グループを追加しました。");
         return RedirectToAction("Index");
     }
 
@@ -68,7 +71,8 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
 
         if (group == null)
         {
-            return NotFound();
+            flashMessage.Danger("学生グループが見つかりません。");
+            return RedirectToAction("Index");
         }
 
         var assignments = await assignmentService.GetAssignmentsByStudentGroupIdAsync(group.Id, cancellationToken);
@@ -114,7 +118,8 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
 
         if (ticket == null || ticket.StudentGroupId != studentGroupId)
         {
-            return NotFound();
+            flashMessage.Danger("チケットが見つかりません。");
+            return RedirectToAction("Detail", new { id = studentGroupId });
         }
 
         var adminUsers = await adminUserService.GetAllAdminUsersAsync(cancellationToken);
@@ -150,7 +155,8 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
         var ticket = await ticketService.GetTicketByIdAsync(ticketId, cancellationToken);
         if (studentGroup == null || ticket == null || ticket.StudentGroupId != studentGroupId)
         {
-            return NotFound();
+            flashMessage.Danger("チケットが見つかりません。");
+            return RedirectToAction("Detail", new { id = studentGroupId });
         }
         
         var adminUsers = await adminUserService.GetAllAdminUsersAsync(cancellationToken);
@@ -186,7 +192,6 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
         }, cancellationToken);
         
         flashMessage.Info("チケットの担当者を変更しました。");
-
         return RedirectToAction("Detail", new { id = studentGroupId });
     }
 

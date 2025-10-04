@@ -41,10 +41,11 @@ public class TicketService(IceDbContext iceDbContext, INotificationService notif
         var transaction = await iceDbContext.Database.BeginTransactionAsync(cancellationToken);
 
         // StudentGroupが存在するか確認
-        var studentGroupExists = await iceDbContext.StudentGroups
-            .AnyAsync(sg => sg.Id == addTicketDto.StudentGroupId, cancellationToken);
+        var studentGroup = await iceDbContext.StudentGroups
+            .FirstAsync(sg => sg.Id == addTicketDto.StudentGroupId, cancellationToken);
 
-        if (!studentGroupExists)
+
+        if (studentGroup == null)
         {
             throw new EntityNotFoundException($"学生グループID {addTicketDto.StudentGroupId} の学生グループが見つかりません。");
         }
@@ -68,17 +69,13 @@ public class TicketService(IceDbContext iceDbContext, INotificationService notif
         await LinkAssignmentToTicketAsync(ticket.Id, addTicketDto.AssignmentId, addTicketDto.StudentGroupId, cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
-
-        // 学生グループ名を取得
-        var studentGroup = await iceDbContext.StudentGroups
-            .FirstAsync(sg => sg.Id == addTicketDto.StudentGroupId, cancellationToken);
-
+        
         // SSE通知を送信
         await notificationService.NotifyTicketCreatedAsync(
             ticket.Id,
             ticket.Title,
             studentGroup.GroupName,
-            targetTutor.FullName
+            targetTutor.FullName ?? "未割当"
         );
 
         return new AddTicketResDto

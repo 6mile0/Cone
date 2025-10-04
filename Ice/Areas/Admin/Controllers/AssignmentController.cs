@@ -1,10 +1,9 @@
 ﻿using Ice.Areas.Admin.Dtos.Req;
 using Ice.Areas.Admin.ViewModels.Assignment;
 using Ice.Areas.Admin.ViewModels.StudentGroup;
-using Ice.Enums;
+using Ice.Exception;
 using Ice.Services.AssignmentService;
 using Ice.Services.AssignmentStudentGroupService;
-using Ice.Services.StudentGroupService;
 using Microsoft.AspNetCore.Mvc;
 using Vereyon.Web;
 
@@ -12,7 +11,10 @@ namespace Ice.Areas.Admin.Controllers;
 
 [Area("admin")]
 [Route("[area]/assignments")]
-public class AssignmentController(IAssignmentService assignmentService, IAssignmentStudentGroupService assignmentStudentGroupService, IFlashMessage flashMessage) : Controller
+public class AssignmentController(
+    IAssignmentService assignmentService,
+    IAssignmentStudentGroupService assignmentStudentGroupService,
+    IFlashMessage flashMessage) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -53,6 +55,7 @@ public class AssignmentController(IAssignmentService assignmentService, IAssignm
     {
         if (!ModelState.IsValid)
         {
+            flashMessage.Danger("入力に誤りがあります。");
             return View("Add");
         }
 
@@ -61,6 +64,8 @@ public class AssignmentController(IAssignmentService assignmentService, IAssignm
             Name = model.Name,
             Description = model.Description
         }, cancellationToken);
+        
+        flashMessage.Info("新しい課題を追加しました。");
         return RedirectToAction("Index");
     }
 
@@ -72,7 +77,8 @@ public class AssignmentController(IAssignmentService assignmentService, IAssignm
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest("並び順が不正です。");
+            flashMessage.Danger("並び順が不正です。");
+            return RedirectToAction("Index");
         }
 
         foreach (var assignmentOrder in model.Assignments)
@@ -83,6 +89,7 @@ public class AssignmentController(IAssignmentService assignmentService, IAssignm
             await assignmentService.EditAssignmentAsync(assignment, cancellationToken);
         }
 
+        flashMessage.Info("課題の並び順を更新しました。");
         return RedirectToAction("Index");
     }
 
@@ -93,17 +100,20 @@ public class AssignmentController(IAssignmentService assignmentService, IAssignm
 
         if (assignment == null)
         {
-            return NotFound();
+            flashMessage.Danger("指定された課題が見つかりません。");
+            return RedirectToAction("Index");
         }
 
         var assignedGroups = await assignmentService.GetAssignedStudentGroupsAsync(id, cancellationToken);
         var unassignedGroups = await assignmentService.GetUnassignedStudentGroupsAsync(id, cancellationToken);
-        
-        var notStartedGroups = await assignmentStudentGroupService.GetNotStartedStudentGroupsAsync(id, cancellationToken);
-        var inProgressGroups = await assignmentStudentGroupService.GetInProgressStudentGroupsAsync(id, cancellationToken);
+
+        var notStartedGroups =
+            await assignmentStudentGroupService.GetNotStartedStudentGroupsAsync(id, cancellationToken);
+        var inProgressGroups =
+            await assignmentStudentGroupService.GetInProgressStudentGroupsAsync(id, cancellationToken);
         var completedGroups = await assignmentStudentGroupService.GetCompletedStudentGroupsAsync(id, cancellationToken);
-        
-        
+
+
         // ステータスごとにグループを分類
         var viewModel = new AssignmentDetailViewModel
         {
@@ -160,9 +170,10 @@ public class AssignmentController(IAssignmentService assignmentService, IAssignm
 
         if (assignment == null)
         {
-            return NotFound();
+            flashMessage.Danger("指定された課題が見つかりません。");
+            return RedirectToAction("Index");
         }
-        
+
         return View("Edit", new UpdateAssignmentViewModel
         {
             AssignmentId = assignment.Id,
@@ -180,19 +191,22 @@ public class AssignmentController(IAssignmentService assignmentService, IAssignm
     {
         if (!ModelState.IsValid)
         {
+            flashMessage.Danger("入力に誤りがあります。");
             return View("Edit", model);
         }
 
         var assignment = await assignmentService.GetAssignmentByIdAsync(id, cancellationToken);
         if (assignment == null)
         {
-            return NotFound();
+            flashMessage.Danger("指定された課題が見つかりません。");
+            return RedirectToAction("Index");
         }
 
         assignment.Name = model.Name;
         assignment.Description = model.Description;
         await assignmentService.EditAssignmentAsync(assignment, cancellationToken);
 
+        flashMessage.Info("課題情報を更新しました。");
         return RedirectToAction("Detail", new { id });
     }
 
@@ -215,7 +229,16 @@ public class AssignmentController(IAssignmentService assignmentService, IAssignm
             return RedirectToAction("Detail", new { id = assignmentId });
         }
 
-        await assignmentService.AssignToStudentGroupsAsync(assignmentId, studentGroupIds, cancellationToken);
+        try
+        {
+            await assignmentService.AssignToStudentGroupsAsync(assignmentId, studentGroupIds, cancellationToken);
+        }
+        catch (EntityNotFoundException)
+        {
+            flashMessage.Danger("割り当てに失敗しました。存在しない学生グループが含まれている可能性があります。");
+            return RedirectToAction("Detail", new { id = assignmentId });
+        }
+
         flashMessage.Info("学生グループに課題を割り当てました。");
         return RedirectToAction("Detail", new { id = assignmentId });
     }
@@ -230,7 +253,8 @@ public class AssignmentController(IAssignmentService assignmentService, IAssignm
         var assignment = await assignmentService.GetAssignmentByIdAsync(assignmentId, cancellationToken);
         if (assignment == null)
         {
-            return NotFound();
+            flashMessage.Danger("指定された課題が見つかりません。");
+            return RedirectToAction("Index");
         }
 
         await assignmentService.UnassignFromStudentGroupAsync(assignmentId, studentGroupId, cancellationToken);

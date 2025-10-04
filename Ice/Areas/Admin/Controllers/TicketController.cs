@@ -2,28 +2,33 @@
 using Ice.Areas.Admin.ViewModels.AdminUser;
 using Ice.Areas.Admin.ViewModels.Ticket;
 using Ice.Enums;
+using Ice.Exception;
 using Ice.Services.TicketService;
 using Microsoft.AspNetCore.Mvc;
+using Vereyon.Web;
 
 namespace Ice.Areas.Admin.Controllers;
 
 [Area("admin")]
-[Route("[area]/tickets")]
-public class TicketController(ITicketService ticketService) : Controller
+[Route("[area]/tickets/{id:long}")]
+public class TicketController(ITicketService ticketService, IFlashMessage flashMessage) : Controller
 {
-    public IActionResult Index()
-    {
-        return View();
-    }
-
-    [HttpGet("{id:long}")]
+    [HttpGet]
     public async Task<IActionResult> Detail(long id, CancellationToken cancellationToken)
     {
         var ticket = await ticketService.GetTicketByIdAsync(id, cancellationToken);
 
-        if (ticket == null)
+        if (ticket?.StudentGroup == null)
         {
-            return NotFound();
+            flashMessage.Danger("指定されたチケットは存在しません。");
+            // TODO: チケット一覧がないので、ひとまず学生グループ一覧にリダイレクト
+            return RedirectToAction("Index", "StudentGroup", new { area = "admin" });
+        }
+
+        if (ticket.TicketAdminUser?.AdminUser == null)
+        {
+            flashMessage.Danger("チケットの担当者が設定されていません。");
+            return RedirectToAction("Index", "StudentGroup", new { area = "admin" });
         }
 
         var viewModel = new TicketDetailViewModel
@@ -49,16 +54,17 @@ public class TicketController(ITicketService ticketService) : Controller
         return View("Detail", viewModel);
     }
 
-    [HttpGet("{id:long}/edit")]
+    [HttpGet("edit")]
     public async Task<IActionResult> Edit(long id, CancellationToken cancellationToken)
     {
         var ticket = await ticketService.GetTicketByIdAsync(id, cancellationToken);
 
         if (ticket == null)
         {
-            return NotFound();
+            flashMessage.Danger("指定されたチケットは存在しません。");
+            return RedirectToAction("Index", "StudentGroup", new { area = "admin" });
         }
-        
+
         return View("Edit", new UpdateTicketViewModel
         {
             TicketId = ticket.Id,
@@ -69,7 +75,7 @@ public class TicketController(ITicketService ticketService) : Controller
         });
     }
 
-    [HttpPost("{id:long}/edit")]
+    [HttpPost("edit")]
     public async Task<IActionResult> Edit(
         long id,
         [FromForm] UpdateTicketViewModel model,
@@ -79,22 +85,38 @@ public class TicketController(ITicketService ticketService) : Controller
         if (!ModelState.IsValid)
         {
             var ticket = await ticketService.GetTicketByIdAsync(id, cancellationToken);
-            if (ticket == null) return View("Edit", model);
+            if (ticket == null)
+            {
+                flashMessage.Danger("指定されたチケットは存在しません。");
+                return RedirectToAction("Index", "StudentGroup", new { area = "admin" });
+            }
 
-            ViewData["TicketId"] = ticket.Id;
-            ViewData["StudentGroupId"] = ticket.StudentGroupId;
+            return View("Edit", new UpdateTicketViewModel
+            {
+                TicketId = ticket.Id,
+                StudentGroupId = ticket.StudentGroupId,
+                Title = model.Title,
+                Remark = model.Remark,
+                Status = model.Status
+            });
+        }
 
+        try
+        {
+            await ticketService.UpdateTicketAsync(new UpdateTicketReqDto
+            {
+                TicketId = id,
+                Title = model.Title,
+                Remark = model.Remark,
+                Status = model.Status
+            }, cancellationToken);
+        }
+        catch (EntityNotFoundException)
+        {
+            flashMessage.Danger("指定されたチケットは存在しません。");
             return View("Edit", model);
         }
 
-        await ticketService.UpdateTicketAsync(new UpdateTicketReqDto
-        {
-            TicketId = id,
-            Title = model.Title,
-            Remark = model.Remark,
-            Status = model.Status
-        }, cancellationToken);
-        
         return RedirectToAction("Detail", new { id });
     }
 

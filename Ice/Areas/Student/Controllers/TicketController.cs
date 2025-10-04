@@ -23,6 +23,7 @@ public class TicketController(ITicketService ticketService, IAssignmentService a
         var studentGroup = await studentGroupService.GetStudentGroupByIdAsync(studentGroupId, cancellationToken);
         if (studentGroup == null)
         {
+            // TODO: あとでエラーページに差し替える
             return BadRequest("学生のグループIDが存在しません。もう一度テーブル選択を行うか、QRコードを読み込み直してください。");
         }
 
