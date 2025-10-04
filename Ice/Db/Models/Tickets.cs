@@ -29,5 +29,5 @@ public class Tickets
     
     // Navigation property
     public StudentGroups StudentGroup { get; set; }　= null!;
-    public TicketAdminUsers TicketAdminUser { get; set; } = null!;
+    public TicketAdminUsers? TicketAdminUser { get; set; }
 }

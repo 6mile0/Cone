@@ -10,7 +10,9 @@ public class StudentGroupService(IceDbContext iceDbContext) : IStudentGroupServi
 {
     public async Task<IReadOnlyList<StudentGroups>> GetAllStudentGroupsAsync(CancellationToken cancellationToken)
     {
-        return await iceDbContext.StudentGroups.ToListAsync(cancellationToken);
+        return await iceDbContext.StudentGroups
+            .Include(sg => sg.Tickets)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<StudentGroups?> GetStudentGroupByIdAsync(long? groupId, CancellationToken cancellationToken)

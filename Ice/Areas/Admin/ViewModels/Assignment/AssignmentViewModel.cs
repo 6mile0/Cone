@@ -11,6 +11,10 @@ public class AssignmentViewModel
     public required int SortOrder { get; init; }
     
     public required DateTimeOffset CreatedAt { get; init; }
-    
+
     public required DateTimeOffset UpdatedAt { get; init; }
+
+    public int InProgressGroupCount { get; init; }
+
+    public int CompletedGroupCount { get; init; }
 }

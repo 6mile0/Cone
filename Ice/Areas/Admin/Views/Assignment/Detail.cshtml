@@ -75,51 +75,170 @@
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">割り当て済み学生グループ</h5>
-        </div>
-        <div class="card-body">
-            @if (Model.AssignedStudentGroups.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>グループ名</th>
-                                <th style="width: 150px;">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var group in Model.AssignedStudentGroups)
-                            {
-                                <tr>
-                                    <td>
-                                        <a asp-controller="StudentGroup" asp-action="Detail" asp-route-id="@group.Id">@group.GroupName</a>
-                                    </td>
-                                    <td>
-                                        <form asp-action="UnassignStudentGroup" asp-route-assignmentId="@Model.Id" asp-route-studentGroupId="@group.Id" method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('この学生グループから課題の割り当てを解除しますか？');">解除</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <div class="alert alert-info mb-0" role="alert">
-                    まだ学生グループに割り当てられていません
-                </div>
-            }
-        </div>
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">学生グループのステータスと課題の割り当て状況</h5>
     </div>
+    <div class="card-body">
+
+        <div class="accordion" id="groupStatusAccordion">
+            <!-- 完了 -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingCompleted">
+                    <button class="accordion-button collapsed text-success" type="button" 
+                            data-bs-toggle="collapse" data-bs-target="#collapseCompleted" 
+                            aria-expanded="false" aria-controls="collapseCompleted">
+                        ✓ 完了 (@Model.CompletedGroups.Count)
+                    </button>
+                </h2>
+                <div id="collapseCompleted" class="accordion-collapse collapse" 
+                     aria-labelledby="headingCompleted" data-bs-parent="#groupStatusAccordion">
+                    <div class="accordion-body">
+                        @if (Model.CompletedGroups.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>グループ名</th>
+                                            <th>更新日時</th>
+                                            <th style="width: 150px;">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var group in Model.CompletedGroups)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <a asp-controller="StudentGroup" asp-action="Detail" asp-route-id="@group.Id">@group.GroupName</a>
+                                                </td>
+                                                <td>@group.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                                                <td>
+                                                    <form asp-action="UnassignStudentGroup" asp-route-assignmentId="@Model.Id" asp-route-studentGroupId="@group.Id" method="post" class="d-inline">
+                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('この学生グループから課題の割り当てを解除しますか？');">解除</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">完了したグループはありません</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- 進行中 -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingInProgress">
+                    <button class="accordion-button collapsed text-primary" type="button" 
+                            data-bs-toggle="collapse" data-bs-target="#collapseInProgress" 
+                            aria-expanded="false" aria-controls="collapseInProgress">
+                        ⟳ 進行中 (@Model.InProgressGroups.Count)
+                    </button>
+                </h2>
+                <div id="collapseInProgress" class="accordion-collapse collapse" 
+                     aria-labelledby="headingInProgress" data-bs-parent="#groupStatusAccordion">
+                    <div class="accordion-body">
+                        @if (Model.InProgressGroups.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th>グループ名</th>
+                                        <th>更新日時</th>
+                                        <th style="width: 150px;">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach (var group in Model.InProgressGroups)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <a asp-controller="StudentGroup" asp-action="Detail" asp-route-id="@group.Id">@group.GroupName</a>
+                                            </td>
+                                            <td>@group.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                                            <td>
+                                                <form asp-action="UnassignStudentGroup" asp-route-assignmentId="@Model.Id" asp-route-studentGroupId="@group.Id" method="post" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('この学生グループから課題の割り当てを解除しますか？');">解除</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">進行中のグループはありません</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- 未着手 -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingNotStarted">
+                    <button class="accordion-button collapsed text-secondary" type="button" 
+                            data-bs-toggle="collapse" data-bs-target="#collapseNotStarted" 
+                            aria-expanded="false" aria-controls="collapseNotStarted">
+                        ○ 未着手 (@Model.NotStartedGroups.Count)
+                    </button>
+                </h2>
+                <div id="collapseNotStarted" class="accordion-collapse collapse" 
+                     aria-labelledby="headingNotStarted" data-bs-parent="#groupStatusAccordion">
+                    <div class="accordion-body">
+                        @if (Model.NotStartedGroups.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th>グループ名</th>
+                                        <th>更新日時</th>
+                                        <th style="width: 150px;">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach (var group in Model.NotStartedGroups)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <a asp-controller="StudentGroup" asp-action="Detail" asp-route-id="@group.Id">@group.GroupName</a>
+                                            </td>
+                                            <td>@group.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                                            <td>
+                                                <form asp-action="UnassignStudentGroup" asp-route-assignmentId="@Model.Id" asp-route-studentGroupId="@group.Id" method="post" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('この学生グループから課題の割り当てを解除しますか？');">解除</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">未着手のグループはありません</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
 
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="mb-0">学生グループに割り当て</h5>
+            <h5 class="mb-0">課題の割り当て</h5>
         </div>
         <div class="card-body">
             @if (Model.UnassignedStudentGroups.Any())

@@ -13,7 +13,10 @@ public class StudentGroups
     
     [Required]
     public required DateTimeOffset CreatedAt { get; set; }
-    
+
     [ConcurrencyCheck]
     public required DateTimeOffset UpdatedAt { get; set; }
+
+    // Navigation property
+    public ICollection<Tickets>? Tickets { get; set; }
 }

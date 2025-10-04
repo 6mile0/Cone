@@ -7,6 +7,8 @@ public class StudentGroupViewModel
     public required string GroupName { get; init; }
     
     public required DateTimeOffset CreatedAt { get; init; }
-    
+
     public required DateTimeOffset UpdatedAt { get; init; }
+
+    public int TicketCount { get; init; }
 }

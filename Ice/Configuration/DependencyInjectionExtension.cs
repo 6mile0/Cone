@@ -1,5 +1,6 @@
 ﻿using Ice.Services.AdminUserService;
 using Ice.Services.AssignmentService;
+using Ice.Services.AssignmentStudentGroupService;
 using Ice.Services.StudentGroupService;
 using Ice.Services.TicketService;
 using Vereyon.Web;
@@ -16,6 +17,9 @@ public static class DependencyInjectionExtension
         services.AddScoped<IAdminUserService, AdminUserService>();
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<IStudentGroupService, StudentGroupService>();
+        services.AddScoped<IAssignmentStudentGroupService, AssignmentStudentGroupService>();
+        
+        // Register FlashMessage service
         services.AddFlashMessage();
         return services;
     }

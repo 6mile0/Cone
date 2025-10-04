@@ -27,7 +27,8 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
             Id = sg.Id,
             GroupName = sg.GroupName,
             CreatedAt = sg.CreatedAt,
-            UpdatedAt = sg.UpdatedAt
+            UpdatedAt = sg.UpdatedAt,
+            TicketCount = sg.Tickets?.Count ?? 0
         }).ToImmutableList();
 
         return View("Index", new StudentGroupListViewModel
@@ -98,7 +99,7 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
                 Title = t.Title,
                 Status = GetTicketStatusText(t.Status),
                 CreatedAt = t.CreatedAt,
-                AssignedTo = t.TicketAdminUser.AdminUser,
+                AssignedTo = t.TicketAdminUser?.AdminUser,
                 UpdatedAt = t.UpdatedAt
             }).ToImmutableList()
         };
@@ -131,7 +132,7 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
             TicketId = ticket.Id,
             StudentGroupId = ticket.StudentGroupId,
             Title = ticket.Title,
-            AdminUserId = ticket.TicketAdminUser.AdminUserId,
+            CurrentAdminUserId = ticket.TicketAdminUser?.AdminUserId,
             AdminUsers = assignedAdminUser,
             StudentGroupName = ticket.StudentGroup.GroupName,
         });
@@ -169,7 +170,7 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
                 TicketId = model.TicketId,
                 StudentGroupId = model.StudentGroupId,
                 Title = model.Title,
-                AdminUserId = model.AdminUserId,
+                CurrentAdminUserId = model.AdminUserId,
                 AdminUsers = assignedAdminUser,
                 StudentGroupName = studentGroup.GroupName
             };
