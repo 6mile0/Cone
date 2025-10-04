@@ -18,7 +18,6 @@
                 <th>グループ名</th>
                 <th>作成日</th>
                 <th>更新日</th>
-                <th>操作</th>
             </tr>
             </thead>
             <tbody>
@@ -32,15 +31,6 @@
                     </td>
                     <td>@studentGroup.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
                     <td>@studentGroup.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</td>
-                    <td>
-                        <div class="btn-group" role="group">
-                            <a asp-action="EditStudentGroup" asp-route-id="@studentGroup.Id" class="btn btn-sm btn-outline-primary">編集</a>
-                            <form method="post" asp-action="DeleteStudentGroup" style="display: inline;">
-                                <input type="hidden" name="studentGroupId" value="@studentGroup.Id" />
-                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('@studentGroup.GroupName を削除してもよろしいですか？')">削除</button>
-                            </form>
-                        </div>
-                    </td>
                 </tr>
             }
             </tbody>

@@ -31,7 +31,6 @@
                     <th>課題名</th>
                     <th>作成日時</th>
                     <th>更新日時</th>
-                    <th>操作</th>
                 </tr>
                 </thead>
                 <tbody id="sortableTable">
@@ -45,12 +44,6 @@
                         <td>@assignment.Name</td>
                         <td>@assignment.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
                         <td>@assignment.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-sm btn-outline-primary">編集</button>
-                                <button type="button" class="btn btn-sm btn-outline-danger">削除</button>
-                            </div>
-                        </td>
                         <input type="hidden" name="Assignments[@index].Id" value="@assignment.Id"/>
                         <input type="hidden" name="Assignments[@index].SortOrder" value="@(index + 1)"
                                class="sort-order-field"/>
