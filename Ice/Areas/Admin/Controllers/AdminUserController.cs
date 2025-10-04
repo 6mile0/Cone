@@ -1,14 +1,16 @@
 ﻿using Ice.Areas.Admin.Dtos.Req;
 using Ice.Areas.Admin.ViewModels.AdminUser;
 using Ice.Enums;
+using Ice.Exception;
 using Ice.Services.AdminUserService;
 using Microsoft.AspNetCore.Mvc;
+using Vereyon.Web;
 
 namespace Ice.Areas.Admin.Controllers;
 
 [Area("admin")]
 [Route("[area]/users")]
-public class AdminUserController(IAdminUserService adminUserService) : Controller
+public class AdminUserController(IAdminUserService adminUserService, IFlashMessage flashMessage) : Controller
 {
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
@@ -21,7 +23,7 @@ public class AdminUserController(IAdminUserService adminUserService) : Controlle
             CreatedAt = u.CreatedAt,
             UpdatedAt = u.UpdatedAt
         }).ToList();
-
+        
         return View("Index", new AdminUserListViewModel
         {
             AdminUsers = userViewModels
@@ -50,7 +52,8 @@ public class AdminUserController(IAdminUserService adminUserService) : Controlle
             FullName = model.FullName,
             TutorType = model.TutorType
         }, cancellationToken);
-        
+
+        flashMessage.Info("管理ユーザーを追加しました。");
         return RedirectToAction("Index");
     }
 
@@ -60,7 +63,17 @@ public class AdminUserController(IAdminUserService adminUserService) : Controlle
         CancellationToken cancellationToken
     )
     {
-        await adminUserService.DeleteAdminUserAsync(adminUserId, cancellationToken);
-        return RedirectToAction("Index");
+        try
+        {
+            await adminUserService.DeleteAdminUserAsync(adminUserId, cancellationToken);
+            
+            flashMessage.Info("管理ユーザーを削除しました。");
+            return RedirectToAction("Index");
+        }
+        catch (EntityNotFoundException)
+        {
+            flashMessage.Danger("指定された管理ユーザーが見つかりません。");
+            return RedirectToAction("Index");
+        }
     }
 }

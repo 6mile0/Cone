@@ -1,6 +1,7 @@
 ﻿using Ice.Areas.Admin.Dtos.Req;
 using Ice.Db;
 using Ice.Db.Models;
+using Ice.Exception;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ice.Services.AdminUserService;
@@ -36,7 +37,7 @@ public class AdminUserService(IceDbContext iceDbContext): IAdminUserService
 
         if (adminUser == null)
         {
-            throw new InvalidOperationException($"Admin user with ID {adminUserId} not found.");
+            throw new EntityNotFoundException($"Admin user with ID {adminUserId} not found.");
         }
 
         iceDbContext.AdminUsers.Remove(adminUser);

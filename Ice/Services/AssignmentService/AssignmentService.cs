@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Ice.Services.AssignmentService;
 
-public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
+public class AssignmentService(IceDbContext iceDbContext) : IAssignmentService
 {
     public async Task<IReadOnlyList<Assignments>> GetAllAssignmentsAsync(CancellationToken cancellationToken)
     {
@@ -26,39 +26,43 @@ public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
             .FirstOrDefaultAsync(a => a.Id == assignmentId, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Assignments>> GetAssignmentsByStudentGroupIdAsync(long studentGroupId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Assignments>> GetAssignmentsByStudentGroupIdAsync(long studentGroupId,
+        CancellationToken cancellationToken)
     {
         return await iceDbContext.Assignments
             .Include(a => a.TicketAssignments)
             .Include(a => a.StudentGroupAssignmentsProgress)
-            .Where(a => a.StudentGroupAssignmentsProgress != null && a.StudentGroupAssignmentsProgress.Any(p => p.StudentGroupId == studentGroupId))
+            .Where(a => a.StudentGroupAssignmentsProgress != null &&
+                        a.StudentGroupAssignmentsProgress.Any(p => p.StudentGroupId == studentGroupId))
             .OrderBy(a => a.SortOrder)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Assignments>> GetReleasedAssignmentByGroupId(long groupId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Assignments>> GetReleasedAssignmentByGroupId(long groupId,
+        CancellationToken cancellationToken)
     {
         // グループごとに解放されている課題を取得
         var assignmentIds = iceDbContext.StudentGroupAssignmentsProgress
             .Where(sgap => sgap.StudentGroupId == groupId);
-        
+
         return await iceDbContext.Assignments
             .Where(a => assignmentIds.Any(sgap => sgap.AssignmentId == a.Id))
             .OrderBy(a => a.SortOrder)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<Assignments> CreateAssignmentAsync(AddAssignmentDto addAssignmentDto, CancellationToken cancellationToken)
+    public async Task<Assignments> CreateAssignmentAsync(AddAssignmentDto addAssignmentDto,
+        CancellationToken cancellationToken)
     {
         var transaction = await iceDbContext.Database.BeginTransactionAsync(cancellationToken);
-        
+
         // 学生グループが存在しない場合はエラー
         var studentGroupCount = await iceDbContext.StudentGroups.CountAsync(cancellationToken);
         if (studentGroupCount == 0)
         {
             throw new StudentGroupNotFoundException("学生グループが1つも存在しません。先に学生グループを作成してください。");
         }
-        
+
         // 最大値のSortOrderを取得して+1する
         var maxSortOrder = iceDbContext.Assignments
             .Max(a => (int?)a.SortOrder) ?? 0;
@@ -71,12 +75,12 @@ public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow
         };
-        
+
         await iceDbContext.Assignments.AddAsync(assignment, cancellationToken);
         await iceDbContext.SaveChangesAsync(cancellationToken);
 
         await InitialAssignmentsAsync(assignment, cancellationToken);
-        
+
         await transaction.CommitAsync(cancellationToken);
 
         return assignment;
@@ -107,7 +111,8 @@ public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
         throw new NotImplementedException();
     }
 
-    public async Task AssignToStudentGroupsAsync(long assignmentId, List<long> studentGroupIds, CancellationToken cancellationToken)
+    public async Task AssignToStudentGroupsAsync(long assignmentId, List<long> studentGroupIds,
+        CancellationToken cancellationToken)
     {
         var assignment = await iceDbContext.Assignments
             .FirstOrDefaultAsync(a => a.Id == assignmentId, cancellationToken);
@@ -120,29 +125,31 @@ public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
         foreach (var studentGroupId in studentGroupIds)
         {
             var existingProgress = await iceDbContext.StudentGroupAssignmentsProgress
-                .FirstOrDefaultAsync(p => p.AssignmentId == assignmentId && p.StudentGroupId == studentGroupId, cancellationToken);
+                .FirstOrDefaultAsync(p => p.AssignmentId == assignmentId && p.StudentGroupId == studentGroupId,
+                    cancellationToken);
 
-            if (existingProgress == null)
+            if (existingProgress != null) continue;
+
+            var progress = new StudentGroupAssignmentsProgress
             {
-                var progress = new StudentGroupAssignmentsProgress
-                {
-                    AssignmentId = assignmentId,
-                    StudentGroupId = studentGroupId,
-                    Status = AssignmentProgress.NotStarted,
-                    CreatedAt = DateTimeOffset.UtcNow,
-                    UpdatedAt = DateTimeOffset.UtcNow
-                };
+                AssignmentId = assignmentId,
+                StudentGroupId = studentGroupId,
+                Status = AssignmentProgress.NotStarted,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
 
-                iceDbContext.StudentGroupAssignmentsProgress.Add(progress);
-                await iceDbContext.SaveChangesAsync(cancellationToken);
-            }
+            await iceDbContext.StudentGroupAssignmentsProgress.AddAsync(progress, cancellationToken);
+            await iceDbContext.SaveChangesAsync(cancellationToken);
         }
     }
 
-    public async Task UnassignFromStudentGroupAsync(long assignmentId, long studentGroupId, CancellationToken cancellationToken)
+    public async Task UnassignFromStudentGroupAsync(long assignmentId, long studentGroupId,
+        CancellationToken cancellationToken)
     {
         var progress = await iceDbContext.StudentGroupAssignmentsProgress
-            .FirstOrDefaultAsync(p => p.AssignmentId == assignmentId && p.StudentGroupId == studentGroupId, cancellationToken);
+            .FirstOrDefaultAsync(p => p.AssignmentId == assignmentId && p.StudentGroupId == studentGroupId,
+                cancellationToken);
 
         if (progress != null)
         {
@@ -151,7 +158,8 @@ public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
         }
     }
 
-    public async Task<IReadOnlyList<StudentGroups>> GetAssignedStudentGroupsAsync(long assignmentId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<StudentGroups>> GetAssignedStudentGroupsAsync(long assignmentId,
+        CancellationToken cancellationToken)
     {
         return await iceDbContext.StudentGroupAssignmentsProgress
             .Where(p => p.AssignmentId == assignmentId)
@@ -160,7 +168,8 @@ public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<StudentGroups>> GetUnassignedStudentGroupsAsync(long assignmentId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<StudentGroups>> GetUnassignedStudentGroupsAsync(long assignmentId,
+        CancellationToken cancellationToken)
     {
         var allGroups = await iceDbContext.StudentGroups.ToListAsync(cancellationToken);
         var assignedGroupIds = await iceDbContext.StudentGroupAssignmentsProgress
@@ -180,14 +189,15 @@ public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
         // 各StudentGroupsに対して、作成する課題を初期ステータスで追加
         var studentGroups = await iceDbContext.StudentGroups.ToListAsync(cancellationToken);
 
-        foreach (var progress in studentGroups.Select(group => new StudentGroupAssignmentsProgress
-                 {
-                     StudentGroupId = group.Id,
-                     AssignmentId = assignment.Id,
-                     Status = AssignmentProgress.NotStarted,
-                     CreatedAt = DateTimeOffset.UtcNow,
-                     UpdatedAt = DateTimeOffset.UtcNow
-                 }))
+        foreach (var progress in studentGroups.Select(group =>
+                     new StudentGroupAssignmentsProgress
+                     {
+                         StudentGroupId = group.Id,
+                         AssignmentId = assignment.Id,
+                         Status = AssignmentProgress.NotStarted,
+                         CreatedAt = DateTimeOffset.UtcNow,
+                         UpdatedAt = DateTimeOffset.UtcNow
+                     }))
         {
             iceDbContext.StudentGroupAssignmentsProgress.Add(progress);
             await iceDbContext.SaveChangesAsync(cancellationToken);
