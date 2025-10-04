@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "課題一覧 | ice";
 }
+@addTagHelper *, Vereyon.Web.FlashMessage
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -11,6 +12,7 @@
             <a asp-action="AddAssignment" class="btn btn-primary">課題を追加する</a>
         </div>
     </div>
+    <flash dismissable="true" />
 
     <div class="alert alert-warning" role="alert">
         先に学生グループを作成してから、課題を追加してください
