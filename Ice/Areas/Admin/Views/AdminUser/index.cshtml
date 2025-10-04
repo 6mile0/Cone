@@ -1,13 +1,13 @@
 ﻿@model Ice.Areas.Admin.ViewModels.AdminUser.AdminUserListViewModel
 @{
-    ViewData["Title"] = "講師一覧 | ice";
+    ViewData["Title"] = "管理者一覧 | ice";
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>講師一覧</h1>
+        <h1>管理者一覧</h1>
         <div>
-            <a asp-action="AddUser" class="btn btn-primary">講師を追加する</a>
+            <a asp-action="AddUser" class="btn btn-primary">管理者を追加する</a>
         </div>
     </div>
 
@@ -16,7 +16,7 @@
             <thead class="table-dark">
             <tr>
                 <th>名前</th>
-                <th>講師種別</th>
+                <th>種別</th>
                 <th>作成日時</th>
                 <th>更新日時</th>
                 <th>操作</th>
@@ -45,7 +45,7 @@
     @if (!Model.AdminUsers.Any())
     {
         <div class="alert alert-info" role="alert">
-            講師が登録されていません。
+            管理者が登録されていません。
         </div>
     }
 </div>
