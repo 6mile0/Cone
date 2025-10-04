@@ -16,6 +16,15 @@ public class TicketService(IceDbContext iceDbContext): ITicketService
         return await iceDbContext.Tickets.ToListAsync(cancellationToken);
     }
 
+    public async Task<Tickets?> GetTicketByIdAsync(long ticketId, CancellationToken cancellationToken)
+    {
+        return await iceDbContext.Tickets
+            .Include(t => t.StudentGroup)
+            .Include(t => t.TicketAdminUser)
+            .ThenInclude(tau => tau!.AdminUser)
+            .FirstOrDefaultAsync(t => t.Id == ticketId, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Tickets>> GetTicketsByStudentGroupIdAsync(long studentGroupId, CancellationToken cancellationToken)
     {
         return await iceDbContext.Tickets
@@ -86,7 +95,7 @@ public class TicketService(IceDbContext iceDbContext): ITicketService
 
         ticket.Title = req.Title;
         ticket.Status = req.Status;
-        ticket.Remark = req.Remark ?? ticket.Remark;
+        ticket.Remark = req.Remark;
         ticket.UpdatedAt = DateTime.UtcNow;
 
         iceDbContext.Tickets.Update(ticket);

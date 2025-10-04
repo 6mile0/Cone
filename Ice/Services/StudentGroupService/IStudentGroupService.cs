@@ -18,7 +18,7 @@ public interface IStudentGroupService
     /// <param name="groupId">The ID of the student group to retrieve.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>The student group with the specified ID, or null if not found.</returns>
-    Task<StudentGroups> GetStudentGroupByIdAsync(long groupId, CancellationToken cancellationToken);
+    Task<StudentGroups?> GetStudentGroupByIdAsync(long? groupId, CancellationToken cancellationToken);
     
     /// <summary>
     /// Create a new student group.

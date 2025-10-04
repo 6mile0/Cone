@@ -28,6 +28,6 @@ public class Tickets
     public required DateTimeOffset UpdatedAt { get; set; }
     
     // Navigation property
-    public StudentGroups? StudentGroup { get; set; }
-    public TicketAdminUsers? TicketAdminUser { get; set; }
+    public StudentGroups StudentGroup { get; set; }　= null!;
+    public TicketAdminUsers TicketAdminUser { get; set; } = null!;
 }

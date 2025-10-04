@@ -22,6 +22,6 @@ public class TicketAdminUsers
     public required DateTimeOffset UpdatedAt { get; set; }
     
     // Navigation properties
-    public Tickets? Ticket { get; set; }
-    public AdminUsers? AdminUser { get; set; }
+    public Tickets Ticket { get; set; } = null!;
+    public AdminUsers AdminUser { get; set; } = null!;
 }

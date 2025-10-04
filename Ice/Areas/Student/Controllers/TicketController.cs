@@ -1,6 +1,7 @@
 ﻿using Ice.Areas.Student.Dtos.Req;
 using Ice.Areas.Student.ViewModels;
 using Ice.Services.AssignmentService;
+using Ice.Services.StudentGroupService;
 using Ice.Services.TicketService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -10,7 +11,7 @@ namespace Ice.Areas.Student.Controllers;
 
 [Area("student")]
 [Route("tickets/add")]
-public class TicketController(ITicketService ticketService, IAssignmentService assignmentService, IFlashMessage flashMessage) : Controller
+public class TicketController(ITicketService ticketService, IAssignmentService assignmentService, IStudentGroupService studentGroupService, IFlashMessage flashMessage) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> AddTicket(
@@ -18,13 +19,15 @@ public class TicketController(ITicketService ticketService, IAssignmentService a
         CancellationToken cancellationToken
     )
     {
-        if (studentGroupId is null or 0)
+        // 学生グループが存在するか確認
+        var studentGroup = await studentGroupService.GetStudentGroupByIdAsync(studentGroupId, cancellationToken);
+        if (studentGroup == null)
         {
             return BadRequest("学生のグループIDが存在しません。もう一度テーブル選択を行うか、QRコードを読み込み直してください。");
         }
 
         var assignments = await assignmentService.GetAllAssignmentsAsync(cancellationToken);
-        var isAbleAddTicket = await ticketService.IsAbleAddTicketAsync(studentGroupId.Value, cancellationToken);
+        var isAbleAddTicket = await ticketService.IsAbleAddTicketAsync(studentGroup.Id, cancellationToken);
             
         var enumerableAssignments = assignments
             .OrderBy(a => a.SortOrder)
@@ -37,7 +40,7 @@ public class TicketController(ITicketService ticketService, IAssignmentService a
         
         return View("Add", new AddTicketViewModel
         {
-            StudentGroupId = studentGroupId.Value,
+            StudentGroupId = studentGroup.Id,
             Assignments = enumerableAssignments,
             IsAbleAddTicket = isAbleAddTicket != null,
             StaffName = isAbleAddTicket?.TicketAdminUser?.AdminUser?.FullName
@@ -46,16 +49,16 @@ public class TicketController(ITicketService ticketService, IAssignmentService a
 
     [HttpPost]
     public async Task<IActionResult> AddTicket(
-        [FromForm] AddTicketDto request,
+        [FromForm] AddTicketViewModel model,
         CancellationToken cancellationToken
     )
     {
-        var isAbleAddTicket = await ticketService.IsAbleAddTicketAsync(request.StudentGroupId, cancellationToken);
+        var isAbleAddTicket = await ticketService.IsAbleAddTicketAsync(model.StudentGroupId, cancellationToken);
         
         if (isAbleAddTicket != null)
         {
             flashMessage.Danger("現在対応中のチケットが存在するため、新しいチケットを追加できません。対応が完了するまでお待ちください。");
-            return RedirectToAction("AddTicket", new { studentGroupId = request.StudentGroupId });
+            return RedirectToAction("AddTicket", new { studentGroupId = model.StudentGroupId });
         }
         
         if (!ModelState.IsValid)
@@ -72,12 +75,19 @@ public class TicketController(ITicketService ticketService, IAssignmentService a
             
             return View("Add", new AddTicketViewModel
             {
-                StudentGroupId = request.StudentGroupId,
-                AssignmentId = request.AssignmentId,
-                Title = request.Title,
+                StudentGroupId = model.StudentGroupId,
+                AssignmentId = model.AssignmentId,
+                Title = model.Title,
                 Assignments = enumerableAssignments
             });
         }
+        
+        var request = new AddTicketDto
+        {
+            StudentGroupId = model.StudentGroupId,
+            AssignmentId = model.AssignmentId,
+            Title = model.Title,
+        };
 
         await ticketService.CreateTicketAsync(request, cancellationToken);
         return RedirectToAction("AddTicket", "Ticket", new { studentGroupId = request.StudentGroupId });

@@ -8,10 +8,15 @@ namespace Ice.Services.TicketService;
 public interface ITicketService
 {
     /// <summary>
-    /// Gets all ticket, 
+    /// Gets all ticket,
     /// </summary>
     Task<IReadOnlyList<Tickets?>> GetAllTicketsAsync(CancellationToken cancellationToken);
-    
+
+    /// <summary>
+    /// Get a ticket by its ID.
+    /// </summary>
+    Task<Tickets?> GetTicketByIdAsync(long ticketId, CancellationToken cancellationToken);
+
     /// <summary>
     /// Get tickets by student group ID.
     /// </summary>

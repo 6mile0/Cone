@@ -13,11 +13,10 @@ public class StudentGroupService(IceDbContext iceDbContext) : IStudentGroupServi
         return await iceDbContext.StudentGroups.ToListAsync(cancellationToken);
     }
 
-    public async Task<StudentGroups> GetStudentGroupByIdAsync(long groupId, CancellationToken cancellationToken)
+    public async Task<StudentGroups?> GetStudentGroupByIdAsync(long? groupId, CancellationToken cancellationToken)
     {
         return await iceDbContext.StudentGroups
-                   .FirstOrDefaultAsync(g => g.Id == groupId, cancellationToken)
-               ?? throw new EntityNotFoundException($"Student group with ID {groupId} not found.");
+            .FirstOrDefaultAsync(g => g.Id == groupId, cancellationToken);
     }
 
     public async Task<StudentGroups> CreateStudentGroupAsync(AddStudentGroupDto addStudentGroupDto, CancellationToken cancellationToken)

@@ -1,6 +1,8 @@
 using System.Collections.Immutable;
 using Ice.Areas.Admin.Dtos.Req;
+using Ice.Areas.Admin.ViewModels.Assignment;
 using Ice.Areas.Admin.ViewModels.StudentGroup;
+using Ice.Areas.Admin.ViewModels.Ticket;
 using Ice.Enums;
 using Ice.Services.AssignmentService;
 using Ice.Services.StudentGroupService;
@@ -56,8 +58,14 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
     public async Task<IActionResult> Detail(long id, CancellationToken cancellationToken)
     {
         var group = await studentGroupService.GetStudentGroupByIdAsync(id, cancellationToken);
-        var assignments = await assignmentService.GetAssignmentsByStudentGroupIdAsync(id, cancellationToken);
-        var tickets = await ticketService.GetTicketsByStudentGroupIdAsync(id, cancellationToken);
+        
+        if (group == null)
+        {
+            return NotFound();
+        }
+        
+        var assignments = await assignmentService.GetAssignmentsByStudentGroupIdAsync(group.Id, cancellationToken);
+        var tickets = await ticketService.GetTicketsByStudentGroupIdAsync(group.Id, cancellationToken);
 
         var assignmentProgress = assignments.Select(a => new AssignmentProgressViewModel
         {

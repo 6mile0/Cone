@@ -7,7 +7,7 @@ namespace Ice.Areas.Admin.Controllers;
 
 [Area("admin")]
 [Route("[area]/assignments")]
-public class AssignmentController(IAssignmentService assignmentService, ILogger<AssignmentController> logger) : Controller
+public class AssignmentController(IAssignmentService assignmentService) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)

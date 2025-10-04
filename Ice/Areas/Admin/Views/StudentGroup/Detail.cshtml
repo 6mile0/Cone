@@ -84,7 +84,9 @@
                         @foreach (var ticket in Model.Tickets)
                         {
                             <tr>
-                                <td>@ticket.Title</td>
+                                <td>
+                                    <a asp-controller="Ticket" asp-action="Detail" asp-route-id="@ticket.Id">@ticket.Title</a>
+                                </td>
                                 <td>
                                     @switch (ticket.Status)
                                     {

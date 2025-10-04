@@ -8,12 +8,14 @@ public class AddTicketViewModel
     [Required]
     public long StudentGroupId { get; init; }
 
-    [MaxLength(200, ErrorMessage = "困っていること は200文字以内で入力してください。")]
+    [Required(ErrorMessage = "困っていることは必須です")]
+    [MaxLength(200, ErrorMessage = "困っていることは200文字以内で入力してください")]
     public string Title { get; init; } = string.Empty;
 
+    [Required(ErrorMessage = "関連する課題は必須です")]
     public long AssignmentId { get; init; }
 
-    public IEnumerable<SelectListItem> Assignments { get; init; }
+    public IEnumerable<SelectListItem> Assignments { get; init; } = [];
     
     public bool IsAbleAddTicket { get; init; } = true;
     
