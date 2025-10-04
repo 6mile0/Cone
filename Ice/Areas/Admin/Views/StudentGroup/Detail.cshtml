@@ -34,7 +34,9 @@
                         @foreach (var assignment in Model.AssignmentProgress)
                         {
                             <tr>
-                                <td>@assignment.AssignmentName</td>
+                                <td>
+                                    <a asp-controller="Assignment" asp-action="Detail" asp-route-id="@assignment.AssignmentId">@assignment.AssignmentName</a>
+                                </td>
                                 <td>
                                     @switch (assignment.Status)
                                     {
