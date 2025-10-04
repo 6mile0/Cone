@@ -16,6 +16,9 @@ public static class WebApplicationBuilderExtension
         // Add custom services
         builder.Services.AddIceServices(builder.Configuration);
 
+        // Configure Sentry
+        builder.ConfigureSentry();
+
         return builder;
     }
     
@@ -30,6 +33,27 @@ public static class WebApplicationBuilderExtension
         
         // Register IIceDbContext to resolve to IceDbContext
         webApplicationBuilder.Services.AddScoped<IIceDbContext>(provider => provider.GetRequiredService<IceDbContext>());
+
+        return webApplicationBuilder;
+    }
+    
+    private static WebApplicationBuilder ConfigureSentry(this WebApplicationBuilder webApplicationBuilder)
+    {
+        var dsn = webApplicationBuilder.Configuration.GetValue<string>("Sentry:Dsn");
+        var isTargetEnvironment = webApplicationBuilder.Environment.IsDevelopment() ||
+                                  webApplicationBuilder.Environment.IsProduction() ||
+                                  webApplicationBuilder.Environment.IsStaging();
+
+        if (isTargetEnvironment && string.IsNullOrWhiteSpace(dsn))
+        {
+            throw new InvalidOperationException("Sentry DSN is not configured.");
+        }
+
+        webApplicationBuilder.WebHost.UseSentry(o =>
+        {
+            o.Dsn = dsn ?? string.Empty;
+            o.Debug = webApplicationBuilder.Environment.IsDevelopment();
+        });
 
         return webApplicationBuilder;
     }
