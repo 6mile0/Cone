@@ -38,7 +38,7 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
 
     [HttpPost("add")]
     public async Task<IActionResult> AddAssignment(
-        [FromForm] AddAssignmentDto request,
+        [FromForm] AddAssignmentViewModel model,
         CancellationToken cancellationToken
     )
     {
@@ -47,13 +47,17 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
             return View("Add");
         }
 
-        await assignmentService.CreateAssignmentAsync(request, cancellationToken);
+        await assignmentService.CreateAssignmentAsync(new AddAssignmentDto
+        {
+            Name = model.Name,
+            Description = model.Description
+        }, cancellationToken);
         return RedirectToAction("Index");
     }
 
     [HttpPost("sortAssignments")]
     public async Task<IActionResult> SortAssignments(
-        [FromForm] EditAssignmentOrderDto request,
+        [FromForm] EditAssignmentOrderViewModel model,
         CancellationToken cancellationToken
     )
     {
@@ -62,7 +66,7 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
             return BadRequest("並び順が不正です。");
         }
 
-        foreach (var assignmentOrder in request.Assignments)
+        foreach (var assignmentOrder in model.Assignments)
         {
             var assignment = await assignmentService.GetAssignmentByIdAsync(assignmentOrder.Id, cancellationToken);
             if (assignment == null) continue;

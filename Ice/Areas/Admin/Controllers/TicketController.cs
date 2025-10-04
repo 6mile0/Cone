@@ -59,45 +59,42 @@ public class TicketController(ITicketService ticketService) : Controller
             return NotFound();
         }
 
-        var dto = new EditTicketDto
+        ViewData["TicketId"] = ticket.Id;
+        ViewData["StudentGroupId"] = ticket.StudentGroupId;
+        return View("Edit", new UpdateTicketViewModel
         {
             Title = ticket.Title,
             Remark = ticket.Remark,
             Status = ticket.Status
-        };
-
-        ViewData["TicketId"] = ticket.Id;
-        ViewData["StudentGroupId"] = ticket.StudentGroupId;
-        return View("Edit", dto);
+        });
     }
 
     [HttpPost("{id:long}/edit")]
     public async Task<IActionResult> Edit(
         long id,
-        [FromForm] EditTicketDto request,
+        [FromForm] UpdateTicketViewModel model,
         CancellationToken cancellationToken
     )
     {
         if (!ModelState.IsValid)
         {
             var ticket = await ticketService.GetTicketByIdAsync(id, cancellationToken);
-            if (ticket == null) return View("Edit", request);
+            if (ticket == null) return View("Edit", model);
 
             ViewData["TicketId"] = ticket.Id;
             ViewData["StudentGroupId"] = ticket.StudentGroupId;
 
-            return View("Edit", request);
+            return View("Edit", model);
         }
 
-        var updateDto = new UpdateTicketReqDto
+        await ticketService.UpdateTicketAsync(new UpdateTicketReqDto
         {
             TicketId = id,
-            Title = request.Title,
-            Remark = request.Remark,
-            Status = request.Status
-        };
-
-        await ticketService.UpdateTicketAsync(updateDto, cancellationToken);
+            Title = model.Title,
+            Remark = model.Remark,
+            Status = model.Status
+        }, cancellationToken);
+        
         return RedirectToAction("Detail", new { id });
     }
 

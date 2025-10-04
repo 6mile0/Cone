@@ -8,7 +8,7 @@ namespace Ice.Areas.Admin.Controllers;
 
 [Area("admin")]
 [Route("[area]/users")]
-public class AdminUserController(IAdminUserService adminUserService): Controller
+public class AdminUserController(IAdminUserService adminUserService) : Controller
 {
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
@@ -21,7 +21,7 @@ public class AdminUserController(IAdminUserService adminUserService): Controller
             CreatedAt = u.CreatedAt,
             UpdatedAt = u.UpdatedAt
         }).ToList();
-        
+
         return View("Index", new AdminUserListViewModel
         {
             AdminUsers = userViewModels
@@ -36,7 +36,7 @@ public class AdminUserController(IAdminUserService adminUserService): Controller
 
     [HttpPost("add")]
     public async Task<IActionResult> AddUser(
-        [FromForm] AddAdminUserDto request,
+        [FromForm] AddAdminUserViewModel model,
         CancellationToken cancellationToken
     )
     {
@@ -45,7 +45,12 @@ public class AdminUserController(IAdminUserService adminUserService): Controller
             return View("Add");
         }
 
-        await adminUserService.AddAdminUserAsync(request, cancellationToken);
+        await adminUserService.AddAdminUserAsync(new AddAdminUserDto
+        {
+            FullName = model.FullName,
+            TutorType = model.TutorType
+        }, cancellationToken);
+        
         return RedirectToAction("Index");
     }
 

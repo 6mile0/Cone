@@ -41,7 +41,7 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
 
     [HttpPost("add")]
     public async Task<IActionResult> AddStudentGroup(
-        [FromForm] AddStudentGroupDto request,
+        [FromForm] AddStudentGroupViewModel model,
         CancellationToken cancellationToken
     )
     {
@@ -50,7 +50,10 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
             return View("Add");
         }
 
-        await studentGroupService.CreateStudentGroupAsync(request, cancellationToken);
+        await studentGroupService.CreateStudentGroupAsync(new AddStudentGroupDto
+        {
+            GroupName = model.GroupName
+        }, cancellationToken);
         return RedirectToAction("Index");
     }
 
