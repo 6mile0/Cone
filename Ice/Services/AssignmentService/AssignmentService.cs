@@ -12,6 +12,7 @@ public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
     public async Task<IReadOnlyList<Assignments>> GetAllAssignmentsAsync(CancellationToken cancellationToken)
     {
         return await iceDbContext.Assignments
+            .Include(a => a.StudentGroupAssignmentsProgress)
             .OrderBy(a => a.SortOrder)
             .ToListAsync(cancellationToken);
     }
@@ -19,7 +20,8 @@ public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
     public async Task<Assignments?> GetAssignmentByIdAsync(long assignmentId, CancellationToken cancellationToken)
     {
         return await iceDbContext.Assignments
-            .Include(a => a.StudentGroupAssignmentsProgress)
+            .Include(a => a.StudentGroupAssignmentsProgress)!
+            .ThenInclude(p => p.StudentGroup)
             .Include(a => a.TicketAssignments)
             .FirstOrDefaultAsync(a => a.Id == assignmentId, cancellationToken);
     }
@@ -156,6 +158,21 @@ public class AssignmentService(IceDbContext iceDbContext): IAssignmentService
             .Include(p => p.StudentGroup)
             .Select(p => p.StudentGroup!)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<StudentGroups>> GetUnassignedStudentGroupsAsync(long assignmentId, CancellationToken cancellationToken)
+    {
+        var allGroups = await iceDbContext.StudentGroups.ToListAsync(cancellationToken);
+        var assignedGroupIds = await iceDbContext.StudentGroupAssignmentsProgress
+            .Where(p => p.AssignmentId == assignmentId)
+            .Select(p => p.StudentGroupId)
+            .ToListAsync(cancellationToken);
+
+        var unassignedGroups = allGroups
+            .Where(g => !assignedGroupIds.Contains(g.Id))
+            .ToList();
+
+        return unassignedGroups;
     }
 
     private async Task InitialAssignmentsAsync(Assignments assignment, CancellationToken cancellationToken)

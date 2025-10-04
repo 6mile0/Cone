@@ -1,7 +1,7 @@
 @using Ice.Enums
 @model Ice.Areas.Admin.ViewModels.Ticket.AssignTicketViewModel
 @{
-    ViewData["Title"] = "担当者変更 | ice";
+    ViewData["Title"] = "担当者変更";
 }
 @addTagHelper *, Vereyon.Web.FlashMessage
 
@@ -27,7 +27,7 @@
                 <option value="">選択してください</option>
                 @foreach (var admin in Model.AdminUsers)
                 {
-                    <option value="@admin.Id" selected="@(admin.Id == Model.AdminUserId)">
+                    <option value="@admin.Id" selected="@(admin.Id == Model.CurrentAdminUserId)">
                         @admin.FullName (@(admin.TutorType == TutorTypes.TeachingAssistant ? "TA" : "SA"))
                     </option>
                 }

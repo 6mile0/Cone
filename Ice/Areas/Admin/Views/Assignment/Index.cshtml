@@ -1,6 +1,6 @@
 ﻿@model Ice.Areas.Admin.ViewModels.Assignment.AssignmentListViewModel
 @{
-    ViewData["Title"] = "課題一覧 | ice";
+    ViewData["Title"] = "課題一覧";
 }
 @addTagHelper *, Vereyon.Web.FlashMessage
 
@@ -27,8 +27,8 @@
                 <tr>
                     <th></th>
                     <th>課題名</th>
-                    <th>作成日時</th>
-                    <th>更新日時</th>
+                    <th>進行中のグループ数</th>
+                    <th>完了したグループ数</th>
                 </tr>
                 </thead>
                 <tbody id="sortableTable">
@@ -42,8 +42,8 @@
                         <td>
                             <a asp-action="Detail" asp-route-id="@assignment.Id">@assignment.Name</a>
                         </td>
-                        <td>@assignment.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
-                        <td>@assignment.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                        <td>@assignment.InProgressGroupCount</td>
+                        <td>@assignment.CompletedGroupCount</td>
                         <input type="hidden" name="Assignments[@index].Id" value="@assignment.Id"/>
                         <input type="hidden" name="Assignments[@index].SortOrder" value="@(index + 1)"
                                class="sort-order-field"/>

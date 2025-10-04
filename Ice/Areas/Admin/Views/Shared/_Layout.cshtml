@@ -3,25 +3,21 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>@ViewData["Title"] - Ice</title>
+    <title>@ViewData["Title"] - Cone (コーン)</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
-    <link rel="stylesheet" href="~/Ice.styles.css" asp-append-version="true"/>
 </head>
 <body>
 <header>
     <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
         <div class="container-fluid">
-            <a class="navbar-brand" asp-area="Admin" asp-controller="Home" asp-action="Index">Ice Admin</a>
+            <span class="navbar-brand">Cone</span>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                 <ul class="navbar-nav flex-grow-1">
-                    <li class="nav-item">
-                        <a class="nav-link" asp-area="Admin" asp-controller="Home" asp-action="Index">ダッシュボード</a>
-                    </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="StudentGroup" asp-action="Index">学生グループ管理</a>
                     </li>
@@ -44,7 +40,8 @@
 
 <footer class="border-top footer text-muted">
     <div class="container">
-        &copy; 2025 - Ice
+        <div>Cone - 東京工科大学 布田研究室 講義支援システム</div>
+        <div>開発: <a href="https://6mile.dev" target="_blank" rel="noopener noreferrer">6mile</a></div>
     </div>
 </footer>
 <script src="~/lib/jquery/dist/jquery.min.js"></script>

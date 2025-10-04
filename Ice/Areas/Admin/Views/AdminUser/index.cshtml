@@ -1,6 +1,6 @@
 ﻿@model Ice.Areas.Admin.ViewModels.AdminUser.AdminUserListViewModel
 @{
-    ViewData["Title"] = "管理者一覧 | ice";
+    ViewData["Title"] = "管理者一覧";
 }
 @addTagHelper *, Vereyon.Web.FlashMessage
 
@@ -21,7 +21,6 @@
                 <th>名前</th>
                 <th>種別</th>
                 <th>作成日時</th>
-                <th>更新日時</th>
                 <th>操作</th>
             </tr>
             </thead>
@@ -32,7 +31,6 @@
                     <td>@user.FullName</td>
                     <td>@(user.TutorType == Ice.Enums.TutorTypes.TeachingAssistant ? "TA" : "SA")</td>
                     <td>@user.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
-                    <td>@user.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</td>
                     <td>
                         <form method="post" asp-action="DeleteUser" style="display: inline;">
                             <input type="hidden" name="adminUserId" value="@user.Id" />

@@ -1,7 +1,9 @@
 ﻿using Ice.Areas.Admin.Dtos.Req;
 using Ice.Areas.Admin.ViewModels.Assignment;
 using Ice.Areas.Admin.ViewModels.StudentGroup;
+using Ice.Enums;
 using Ice.Services.AssignmentService;
+using Ice.Services.AssignmentStudentGroupService;
 using Ice.Services.StudentGroupService;
 using Microsoft.AspNetCore.Mvc;
 using Vereyon.Web;
@@ -10,7 +12,7 @@ namespace Ice.Areas.Admin.Controllers;
 
 [Area("admin")]
 [Route("[area]/assignments")]
-public class AssignmentController(IAssignmentService assignmentService, IStudentGroupService studentGroupService, IFlashMessage flashMessage) : Controller
+public class AssignmentController(IAssignmentService assignmentService, IAssignmentStudentGroupService assignmentStudentGroupService, IFlashMessage flashMessage) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -23,7 +25,11 @@ public class AssignmentController(IAssignmentService assignmentService, IStudent
             Name = a.Name,
             SortOrder = a.SortOrder,
             CreatedAt = a.CreatedAt,
-            UpdatedAt = a.UpdatedAt
+            UpdatedAt = a.UpdatedAt,
+            InProgressGroupCount = a.StudentGroupAssignmentsProgress?
+                .Count(p => p.Status == Ice.Enums.AssignmentProgress.InProgress) ?? 0,
+            CompletedGroupCount = a.StudentGroupAssignmentsProgress?
+                .Count(p => p.Status == Ice.Enums.AssignmentProgress.Completed) ?? 0
         }).ToList();
 
         return View("Index", new AssignmentListViewModel
@@ -91,9 +97,14 @@ public class AssignmentController(IAssignmentService assignmentService, IStudent
         }
 
         var assignedGroups = await assignmentService.GetAssignedStudentGroupsAsync(id, cancellationToken);
-        var allGroups = await studentGroupService.GetAllStudentGroupsAsync(cancellationToken);
-        var unassignedGroups = allGroups.Where(g => assignedGroups.All(ag => ag.Id != g.Id)).ToList();
-
+        var unassignedGroups = await assignmentService.GetUnassignedStudentGroupsAsync(id, cancellationToken);
+        
+        var notStartedGroups = await assignmentStudentGroupService.GetNotStartedStudentGroupsAsync(id, cancellationToken);
+        var inProgressGroups = await assignmentStudentGroupService.GetInProgressStudentGroupsAsync(id, cancellationToken);
+        var completedGroups = await assignmentStudentGroupService.GetCompletedStudentGroupsAsync(id, cancellationToken);
+        
+        
+        // ステータスごとにグループを分類
         var viewModel = new AssignmentDetailViewModel
         {
             Id = assignment.Id,
@@ -110,6 +121,27 @@ public class AssignmentController(IAssignmentService assignmentService, IStudent
                 UpdatedAt = g.UpdatedAt
             }).ToList(),
             UnassignedStudentGroups = unassignedGroups.Select(g => new StudentGroupViewModel
+            {
+                Id = g.Id,
+                GroupName = g.GroupName,
+                CreatedAt = g.CreatedAt,
+                UpdatedAt = g.UpdatedAt
+            }).ToList(),
+            NotStartedGroups = notStartedGroups.Select(g => new StudentGroupViewModel
+            {
+                Id = g.Id,
+                GroupName = g.GroupName,
+                CreatedAt = g.CreatedAt,
+                UpdatedAt = g.UpdatedAt
+            }).ToList(),
+            InProgressGroups = inProgressGroups.Select(g => new StudentGroupViewModel
+            {
+                Id = g.Id,
+                GroupName = g.GroupName,
+                CreatedAt = g.CreatedAt,
+                UpdatedAt = g.UpdatedAt
+            }).ToList(),
+            CompletedGroups = completedGroups.Select(g => new StudentGroupViewModel
             {
                 Id = g.Id,
                 GroupName = g.GroupName,

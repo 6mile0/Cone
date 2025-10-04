@@ -64,7 +64,7 @@ public interface IAssignmentService
     /// Assign an assignment to student groups.
     /// </summary>
     /// <param name="assignmentId">The ID of the assignment.</param>
-    /// <param name="studentGroupIds">The IDs of student groups to assign.</param>
+    /// <param name="studentGroupIds">The IDs of student group to assign.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task AssignToStudentGroupsAsync(long assignmentId, List<long> studentGroupIds, CancellationToken cancellationToken);
@@ -85,4 +85,12 @@ public interface IAssignmentService
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A list of assigned student groups.</returns>
     Task<IReadOnlyList<StudentGroups>> GetAssignedStudentGroupsAsync(long assignmentId, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Get student groups not assigned to an assignment.
+    /// </summary>
+    /// <param name="assignmentId">The ID of the assignment.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A list of unassigned student groups.</returns>
+    Task<IReadOnlyList<StudentGroups>> GetUnassignedStudentGroupsAsync(long assignmentId, CancellationToken cancellationToken);
 }

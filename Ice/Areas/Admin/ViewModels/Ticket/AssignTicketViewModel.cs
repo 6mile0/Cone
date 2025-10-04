@@ -12,6 +12,8 @@ public class AssignTicketViewModel
     public string Title { get; init; } = string.Empty;
     
     public string StudentGroupName { get; init; } = string.Empty;
+    
+    public long? CurrentAdminUserId { get; init; } = null;
 
     [Required(ErrorMessage = "担当者は必須です")]
     public long AdminUserId { get; init; }

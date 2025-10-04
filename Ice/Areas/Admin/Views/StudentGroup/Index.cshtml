@@ -1,6 +1,6 @@
 @model Ice.Areas.Admin.ViewModels.StudentGroup.StudentGroupListViewModel
 @{
-    ViewData["Title"] = "学生グループ一覧 | ice";
+    ViewData["Title"] = "学生グループ一覧";
 }
 @addTagHelper *, Vereyon.Web.FlashMessage
 
@@ -18,6 +18,7 @@
             <thead class="table-dark">
             <tr>
                 <th>グループ名</th>
+                <th>チケット数</th>
                 <th>作成日</th>
                 <th>更新日</th>
             </tr>
@@ -31,6 +32,7 @@
                             @studentGroup.GroupName
                         </a>
                     </td>
+                    <td>@studentGroup.TicketCount</td>
                     <td>@studentGroup.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
                     <td>@studentGroup.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</td>
                 </tr>

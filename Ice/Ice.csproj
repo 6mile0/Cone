@@ -31,8 +31,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <AdditionalFiles Include="Areas\Admin\Views\Home\Index.cshtml" />
-      <AdditionalFiles Include="Areas\Admin\Views\Home\Privacy.cshtml" />
       <AdditionalFiles Include="Areas\Admin\Views\Shared\Error.cshtml" />
       <AdditionalFiles Include="Areas\Admin\Views\Shared\_Layout.cshtml" />
       <AdditionalFiles Include="Areas\Admin\Views\Shared\_ValidationScriptsPartial.cshtml" />
