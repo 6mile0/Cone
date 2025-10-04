@@ -1,4 +1,5 @@
-﻿using Ice.Areas.Student.Dtos.Req;
+﻿using Ice.Areas.Admin.Dtos.Req;
+using Ice.Areas.Student.Dtos.Req;
 using Ice.Areas.Student.Dtos.Res;
 using Ice.Db;
 using Ice.Db.Models;
@@ -35,7 +36,7 @@ public class TicketService(IceDbContext iceDbContext): ITicketService
 
         if (!studentGroupExists)
         {
-            throw new EntityNotFoundException($"StudentGroup with ID {addTicketDto.StudentGroupId} does not exist.");
+            throw new EntityNotFoundException($"学生グループID {addTicketDto.StudentGroupId} の学生グループが見つかりません。");
         }
 
         var ticket = new Tickets
@@ -73,14 +74,39 @@ public class TicketService(IceDbContext iceDbContext): ITicketService
         };
     }
 
-    public Task<Tickets> UpdateTicketAsync(Tickets ticket, CancellationToken cancellationToken)
+    public async Task<Tickets> UpdateTicketAsync(UpdateTicketReqDto req, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var ticket = await iceDbContext.Tickets
+            .FirstOrDefaultAsync(t => t.Id == req.TicketId, cancellationToken);
+
+        if (ticket == null)
+        {
+            throw new EntityNotFoundException($"チケットID {req.TicketId} のチケットが見つかりません。");
+        }
+
+        ticket.Title = req.Title;
+        ticket.Status = req.Status;
+        ticket.Remark = req.Remark ?? ticket.Remark;
+        ticket.UpdatedAt = DateTime.UtcNow;
+
+        iceDbContext.Tickets.Update(ticket);
+        await iceDbContext.SaveChangesAsync(cancellationToken);
+
+        return ticket;
     }
 
-    public Task DeleteTicketAsync(long ticketId, CancellationToken cancellationToken)
+    public async Task DeleteTicketAsync(long ticketId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var ticket = await iceDbContext.Tickets
+            .FirstOrDefaultAsync(t => t.Id == ticketId, cancellationToken);
+
+        if (ticket == null)
+        {
+            throw new EntityNotFoundException($"チケットID {ticketId} のチケットが見つかりません。");
+        }
+
+        iceDbContext.Tickets.Remove(ticket);
+        await iceDbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<Tickets?> IsAbleAddTicketAsync(long studentGroupId, CancellationToken cancellationToken)

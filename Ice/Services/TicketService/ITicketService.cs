@@ -1,4 +1,5 @@
-﻿using Ice.Areas.Student.Dtos.Req;
+﻿using Ice.Areas.Admin.Dtos.Req;
+using Ice.Areas.Student.Dtos.Req;
 using Ice.Areas.Student.Dtos.Res;
 using Ice.Db.Models;
 
@@ -24,7 +25,7 @@ public interface ITicketService
     /// <summary>
     /// Update an existing ticket.
     /// </summary>
-    Task<Tickets> UpdateTicketAsync(Tickets ticket, CancellationToken cancellationToken);
+    Task<Tickets> UpdateTicketAsync(UpdateTicketReqDto req, CancellationToken cancellationToken);
     
     /// <summary>
     /// Delete a ticket by its ID.
