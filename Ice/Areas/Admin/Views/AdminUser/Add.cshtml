@@ -1,10 +1,10 @@
 @model Ice.Areas.Admin.Dtos.Req.AddAdminUserDto
 @{
-    ViewData["Title"] = "講師を追加 | ice";
+    ViewData["Title"] = "管理者を追加 | ice";
 }
 
 <div class="container mt-4">
-    <h1 class="mb-4">講師を追加</h1>
+    <h1 class="mb-4">管理者を追加</h1>
 
     <form method="post" asp-action="AddUser">
         <div class="mb-3">
@@ -14,7 +14,7 @@
         </div>
 
         <div class="mb-3">
-            <label asp-for="TutorType" class="form-label">講師種別</label>
+            <label asp-for="TutorType" class="form-label">種別</label>
             <select asp-for="TutorType" class="form-select" required>
                 <option value="">選択してください</option>
                 <option value="1">TA</option>
