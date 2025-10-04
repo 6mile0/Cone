@@ -52,4 +52,21 @@ public class StudentGroupService(IceDbContext iceDbContext) : IStudentGroupServi
 
         return group;
     }
+
+    public async Task UpdateAssignmentProgressAsync(UpdateAssignmentProgressDto updateAssignmentProgressDto, CancellationToken cancellationToken)
+    {
+        var progress = await iceDbContext.StudentGroupAssignmentsProgress
+            .FirstOrDefaultAsync(p => p.StudentGroupId == updateAssignmentProgressDto.StudentGroupId
+                && p.AssignmentId == updateAssignmentProgressDto.AssignmentId, cancellationToken);
+
+        if (progress == null)
+        {
+            throw new EntityNotFoundException($"Assignment progress not found for student group {updateAssignmentProgressDto.StudentGroupId} and assignment {updateAssignmentProgressDto.AssignmentId}.");
+        }
+
+        progress.Status = updateAssignmentProgressDto.Status;
+        progress.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await iceDbContext.SaveChangesAsync(cancellationToken);
+    }
 }

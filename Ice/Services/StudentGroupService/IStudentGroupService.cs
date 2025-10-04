@@ -43,4 +43,12 @@ public interface IStudentGroupService
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task DeleteStudentGroupAsync(long groupId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Update the assignment progress status for a student group.
+    /// </summary>
+    /// <param name="updateAssignmentProgressDto">The DTO containing student group ID, assignment ID, and new status.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task UpdateAssignmentProgressAsync(UpdateAssignmentProgressDto updateAssignmentProgressDto, CancellationToken cancellationToken);
 }

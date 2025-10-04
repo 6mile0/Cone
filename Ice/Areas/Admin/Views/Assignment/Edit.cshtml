@@ -1,13 +1,15 @@
 @model Ice.Areas.Admin.ViewModels.Assignment.UpdateAssignmentViewModel
 @{
     ViewData["Title"] = "課題編集 | ice";
-    var assignmentId = ViewData["AssignmentId"];
 }
+@addTagHelper *, Vereyon.Web.FlashMessage
+
 
 <div class="container mt-4">
     <h1 class="mb-4">課題編集</h1>
+    <flash dismissable="true" />
 
-    <form method="post" asp-action="Edit" asp-route-id="@assignmentId">
+    <form method="post" asp-action="Edit" asp-route-id="@Model.AssignmentId">
         <div class="mb-3">
             <label asp-for="Name" class="form-label">課題名</label>
             <input asp-for="Name" type="text" class="form-control" required maxlength="100" />
@@ -22,7 +24,7 @@
 
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">更新</button>
-            <a asp-action="Detail" asp-route-id="@assignmentId" class="btn btn-secondary">キャンセル</a>
+            <a asp-action="Detail" asp-route-id="@Model.AssignmentId" class="btn btn-secondary">キャンセル</a>
         </div>
     </form>
 </div>

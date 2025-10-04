@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "課題詳細 | ice";
 }
+@addTagHelper *, Vereyon.Web.FlashMessage
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -11,6 +12,7 @@
             <a asp-action="Index" class="btn btn-secondary">一覧に戻る</a>
         </div>
     </div>
+    <flash dismissable="true" />
 
     <div class="card mb-4">
         <div class="card-header">

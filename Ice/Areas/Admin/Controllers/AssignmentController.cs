@@ -113,6 +113,7 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
         ViewData["AssignmentId"] = assignment.Id;
         return View("Edit", new UpdateAssignmentViewModel
         {
+            AssignmentId = assignment.Id,
             Name = assignment.Name,
             Description = assignment.Description
         });

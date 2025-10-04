@@ -77,7 +77,8 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
         {
             AssignmentId = a.Id,
             AssignmentName = a.Name,
-            Status = GetAssignmentProgressText(a.StudentGroupAssignmentsProgress.Status)
+            Status = GetAssignmentProgressText(a.StudentGroupAssignmentsProgress.Status),
+            StatusEnum = a.StudentGroupAssignmentsProgress.Status
         }).ToImmutableList();
 
         var viewModel = new StudentGroupDetailViewModel
@@ -93,7 +94,8 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
                 Title = t.Title,
                 Status = GetTicketStatusText(t.Status),
                 CreatedAt = t.CreatedAt,
-                AssignedTo = t.TicketAdminUser?.AdminUser
+                AssignedTo = t.TicketAdminUser.AdminUser,
+                UpdatedAt = t.UpdatedAt
             }).ToImmutableList()
         };
 
@@ -177,6 +179,8 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
             TicketId = ticketId,
             AdminUserId = model.AdminUserId
         }, cancellationToken);
+        
+        flashMessage.Info("チケットの担当者を変更しました。");
 
         return RedirectToAction("Detail", new { id = studentGroupId });
     }
@@ -190,6 +194,31 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
             AssignmentProgress.Completed => "完了",
             _ => "不明"
         };
+    }
+
+    [HttpPost("{studentGroupId:long}/assignments/{assignmentId:long}/update-status")]
+    public async Task<IActionResult> UpdateAssignmentStatus(
+        long studentGroupId,
+        long assignmentId,
+        [FromForm] string status,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!Enum.TryParse<AssignmentProgress>(status, out var assignmentStatus))
+        {
+            flashMessage.Danger("無効なステータスです。");
+            return RedirectToAction("Detail", new { id = studentGroupId });
+        }
+
+        await studentGroupService.UpdateAssignmentProgressAsync(new UpdateAssignmentProgressDto
+        {
+            StudentGroupId = studentGroupId,
+            AssignmentId = assignmentId,
+            Status = assignmentStatus
+        }, cancellationToken);
+
+        flashMessage.Info("課題のステータスを更新しました。");
+        return RedirectToAction("Detail", new { id = studentGroupId });
     }
 
     private static string GetTicketStatusText(TicketStatus status)

@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "学生グループ一覧 | ice";
 }
+@addTagHelper *, Vereyon.Web.FlashMessage
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -10,7 +11,8 @@
             <a asp-action="AddStudentGroup" class="btn btn-primary">追加する</a>
         </div>
     </div>
-
+    <flash dismissable="true" />
+    
     <div class="table-responsive">
         <table class="table table-striped table-hover">
             <thead class="table-dark">

@@ -2,9 +2,11 @@
 @{
     ViewData["Title"] = "課題を追加 | ice";
 }
+@addTagHelper *, Vereyon.Web.FlashMessage
 
 <div class="container mt-4">
     <h1 class="mb-4">課題を追加</h1>
+    <flash dismissable="true" />
 
     <form method="post" asp-action="AddAssignment">
         <div class="mb-3">

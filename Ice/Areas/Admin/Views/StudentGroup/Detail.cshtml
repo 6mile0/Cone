@@ -1,7 +1,9 @@
+@using Ice.Enums
 @model Ice.Areas.Admin.ViewModels.StudentGroup.StudentGroupDetailViewModel
 @{
     ViewData["Title"] = "学生グループ詳細 | ice";
 }
+@addTagHelper *, Vereyon.Web.FlashMessage
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -10,6 +12,7 @@
             <a asp-action="Index" class="btn btn-secondary">一覧に戻る</a>
         </div>
     </div>
+    <flash dismissable="true" />
 
     <div class="card mb-4">
         <div class="card-header">
@@ -24,6 +27,7 @@
                         <tr>
                             <th>課題名</th>
                             <th>ステータス</th>
+                            <th>操作</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -47,6 +51,25 @@
                                             <span class="badge bg-warning">@assignment.Status</span>
                                             break;
                                     }
+                                </td>
+                                <td>
+                                    <form asp-action="UpdateAssignmentStatus" asp-route-studentGroupId="@Model.Id" asp-route-assignmentId="@assignment.AssignmentId" method="post" class="d-inline">
+                                        <select name="status" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
+                                            <option value="">ステータスを選択してください</option>
+                                            @if (assignment.StatusEnum != Ice.Enums.AssignmentProgress.NotStarted)
+                                            {
+                                                <option value="NotStarted">未着手</option>
+                                            }
+                                            @if (assignment.StatusEnum != Ice.Enums.AssignmentProgress.InProgress)
+                                            {
+                                                <option value="InProgress">進行中</option>
+                                            }
+                                            @if (assignment.StatusEnum != Ice.Enums.AssignmentProgress.Completed)
+                                            {
+                                                <option value="Completed">完了</option>
+                                            }
+                                        </select>
+                                    </form>
                                 </td>
                             </tr>
                         }
@@ -77,7 +100,7 @@
                             <th>タイトル</th>
                             <th>ステータス</th>
                             <th>担当者</th>
-                            <th>作成日時</th>
+                            <th>最終更新日時</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -111,11 +134,11 @@
                                     }
                                     else
                                     {
-                                        @ticket.AssignedTo.FullName
+                                        @ticket.AssignedTo.FullName <span>(@if(ticket.AssignedTo.TutorType == TutorTypes.TeachingAssistant) { <span>TA</span> } else { <span>SA</span> })</span>
                                     }
                                     <a asp-action="AssignTicket" asp-route-studentGroupId="@Model.Id" asp-route-ticketId="@ticket.Id" class="btn btn-sm btn-outline-primary ms-2">担当者変更</a>
                                 </td>
-                                <td>@ticket.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                                <td>@ticket.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</td>
                             </tr>
                         }
                         </tbody>

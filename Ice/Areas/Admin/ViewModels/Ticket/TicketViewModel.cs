@@ -13,4 +13,6 @@ public class TicketViewModel
     public required AdminUsers? AssignedTo { get; init; }
 
     public required DateTimeOffset CreatedAt { get; init; }
+    
+    public required DateTimeOffset UpdatedAt { get; init; }
 }

@@ -2,9 +2,11 @@
 @{
     ViewData["Title"] = "チケット編集 | ice";
 }
+@addTagHelper *, Vereyon.Web.FlashMessage
 
 <div class="container mt-4">
     <h1 class="mb-4">チケット編集</h1>
+    <flash dismissable="true" />
 
     <form method="post" asp-action="Edit" asp-route-id="@Model.TicketId">
         <div class="mb-3">
