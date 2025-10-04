@@ -104,7 +104,17 @@
                                             break;
                                     }
                                 </td>
-                                <td>@if (string.IsNullOrEmpty(ticket.AssignedTo?.FullName)) { <em>未割当</em> } else { @ticket.AssignedTo.FullName }</td>
+                                <td>
+                                    @if (string.IsNullOrEmpty(ticket.AssignedTo?.FullName))
+                                    {
+                                        <em>未割当</em>
+                                    }
+                                    else
+                                    {
+                                        @ticket.AssignedTo.FullName
+                                    }
+                                    <a asp-action="AssignTicket" asp-route-studentGroupId="@Model.Id" asp-route-ticketId="@ticket.Id" class="btn btn-sm btn-outline-primary ms-2">担当者変更</a>
+                                </td>
                                 <td>@ticket.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
                             </tr>
                         }

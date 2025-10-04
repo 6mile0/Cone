@@ -41,4 +41,9 @@ public interface ITicketService
     /// Check if a student group can add a new ticket.
     /// </summary>
     Task<Tickets?> IsAbleAddTicketAsync(long studentGroupId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Assign a ticket to an admin user.
+    /// </summary>
+    Task<Tickets> AssignTicketAsync(AssignTicketReqDto req, CancellationToken cancellationToken);
 }

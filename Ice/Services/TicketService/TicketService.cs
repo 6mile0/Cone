@@ -127,6 +127,52 @@ public class TicketService(IceDbContext iceDbContext): ITicketService
             .FirstOrDefaultAsync(t => t.StudentGroupId == studentGroupId && t.Status == TicketStatus.InProgress, cancellationToken);
     }
 
+    public async Task<Tickets> AssignTicketAsync(AssignTicketReqDto req, CancellationToken cancellationToken)
+    {
+        await using var transaction = await iceDbContext.Database.BeginTransactionAsync(cancellationToken);
+
+        var ticket = await iceDbContext.Tickets
+            .FirstOrDefaultAsync(t => t.Id == req.TicketId, cancellationToken);
+
+        if (ticket == null)
+        {
+            throw new EntityNotFoundException($"チケットID {req.TicketId} のチケットが見つかりません。");
+        }
+
+        var adminUser = await iceDbContext.AdminUsers
+            .FirstOrDefaultAsync(a => a.Id == req.AdminUserId, cancellationToken);
+
+        if (adminUser == null)
+        {
+            throw new EntityNotFoundException($"管理者ID {req.AdminUserId} の管理者が見つかりません。");
+        }
+
+        // 既存の担当者レコードを削除
+        var existingAssignment = await iceDbContext.TicketAdminUsers
+            .FirstOrDefaultAsync(tau => tau.TicketId == req.TicketId, cancellationToken);
+
+        if (existingAssignment != null)
+        {
+            iceDbContext.TicketAdminUsers.Remove(existingAssignment);
+        }
+
+        // 新しい担当者レコードを追加
+        var newAssignment = new TicketAdminUsers
+        {
+            TicketId = req.TicketId,
+            AdminUserId = req.AdminUserId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        iceDbContext.TicketAdminUsers.Add(newAssignment);
+        ticket.UpdatedAt = DateTime.UtcNow;
+        await iceDbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+
+        return ticket;
+    }
+
     private async Task<AdminUsers> AssignTutorToTicketAsync(CancellationToken cancellationToken)
     {
         // 講師ごとの担当チケット数を一度のクエリで取得

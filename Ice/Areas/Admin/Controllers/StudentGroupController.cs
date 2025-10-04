@@ -1,19 +1,22 @@
 using System.Collections.Immutable;
 using Ice.Areas.Admin.Dtos.Req;
+using Ice.Areas.Admin.ViewModels.AdminUser;
 using Ice.Areas.Admin.ViewModels.Assignment;
 using Ice.Areas.Admin.ViewModels.StudentGroup;
 using Ice.Areas.Admin.ViewModels.Ticket;
 using Ice.Enums;
+using Ice.Services.AdminUserService;
 using Ice.Services.AssignmentService;
 using Ice.Services.StudentGroupService;
 using Ice.Services.TicketService;
 using Microsoft.AspNetCore.Mvc;
+using Vereyon.Web;
 
 namespace Ice.Areas.Admin.Controllers;
 
 [Area("admin")]
 [Route("[area]/student-groups")]
-public class StudentGroupController(IStudentGroupService studentGroupService, IAssignmentService assignmentService, ITicketService ticketService) : Controller
+public class StudentGroupController(IStudentGroupService studentGroupService, IAssignmentService assignmentService, ITicketService ticketService, IAdminUserService adminUserService, IFlashMessage flashMessage) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -61,12 +64,12 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
     public async Task<IActionResult> Detail(long id, CancellationToken cancellationToken)
     {
         var group = await studentGroupService.GetStudentGroupByIdAsync(id, cancellationToken);
-        
+
         if (group == null)
         {
             return NotFound();
         }
-        
+
         var assignments = await assignmentService.GetAssignmentsByStudentGroupIdAsync(group.Id, cancellationToken);
         var tickets = await ticketService.GetTicketsByStudentGroupIdAsync(group.Id, cancellationToken);
 
@@ -76,7 +79,7 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
             AssignmentName = a.Name,
             Status = GetAssignmentProgressText(a.StudentGroupAssignmentsProgress.Status)
         }).ToImmutableList();
-    
+
         var viewModel = new StudentGroupDetailViewModel
         {
             Id = group.Id,
@@ -93,8 +96,89 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
                 AssignedTo = t.TicketAdminUser?.AdminUser
             }).ToImmutableList()
         };
-    
+
         return View("Detail", viewModel);
+    }
+
+    [HttpGet("{studentGroupId:long}/tickets/{ticketId:long}/assign")]
+    public async Task<IActionResult> AssignTicket(long studentGroupId, long ticketId, CancellationToken cancellationToken)
+    {
+        var ticket = await ticketService.GetTicketByIdAsync(ticketId, cancellationToken);
+
+        if (ticket == null || ticket.StudentGroupId != studentGroupId)
+        {
+            return NotFound();
+        }
+
+        var adminUsers = await adminUserService.GetAllAdminUsersAsync(cancellationToken);
+        var assignedAdminUser = adminUsers.Select(au => new AdminUserViewModel
+        {
+            Id = au.Id,
+            FullName = au.FullName,
+            TutorType = Enum.Parse<TutorTypes>(au.TutorType.ToString()),
+            CreatedAt = au.CreatedAt,
+            UpdatedAt = au.UpdatedAt
+        }).ToImmutableList();
+
+        return View("AssignTicket", new AssignTicketViewModel
+        {
+            TicketId = ticket.Id,
+            StudentGroupId = ticket.StudentGroupId,
+            Title = ticket.Title,
+            AdminUserId = ticket.TicketAdminUser.AdminUserId,
+            AdminUsers = assignedAdminUser,
+            StudentGroupName = ticket.StudentGroup.GroupName,
+        });
+    }
+
+    [HttpPost("{studentGroupId:long}/tickets/{ticketId:long}/assign")]
+    public async Task<IActionResult> AssignTicket(
+        long studentGroupId,
+        long ticketId,
+        [FromForm] AssignTicketViewModel model,
+        CancellationToken cancellationToken
+    )
+    {
+        var studentGroup = await studentGroupService.GetStudentGroupByIdAsync(studentGroupId, cancellationToken);
+        var ticket = await ticketService.GetTicketByIdAsync(ticketId, cancellationToken);
+        if (studentGroup == null || ticket == null || ticket.StudentGroupId != studentGroupId)
+        {
+            return NotFound();
+        }
+        
+        var adminUsers = await adminUserService.GetAllAdminUsersAsync(cancellationToken);
+        var assignedAdminUser = adminUsers.Select(au => new AdminUserViewModel
+        {
+            Id = au.Id,
+            FullName = au.FullName,
+            TutorType = Enum.Parse<TutorTypes>(au.TutorType.ToString()),
+            CreatedAt = au.CreatedAt,
+            UpdatedAt = au.UpdatedAt
+        }).ToImmutableList();
+        
+        if (!ModelState.IsValid)
+        {
+            var viewModel = new AssignTicketViewModel
+            {
+                TicketId = model.TicketId,
+                StudentGroupId = model.StudentGroupId,
+                Title = model.Title,
+                AdminUserId = model.AdminUserId,
+                AdminUsers = assignedAdminUser,
+                StudentGroupName = studentGroup.GroupName
+            };
+
+            flashMessage.Danger("入力に誤りがあります。");
+            return View("AssignTicket", viewModel);
+        }
+
+        await ticketService.AssignTicketAsync(new AssignTicketReqDto
+        {
+            TicketId = ticketId,
+            AdminUserId = model.AdminUserId
+        }, cancellationToken);
+
+        return RedirectToAction("Detail", new { id = studentGroupId });
     }
 
     private static string GetAssignmentProgressText(AssignmentProgress status)
