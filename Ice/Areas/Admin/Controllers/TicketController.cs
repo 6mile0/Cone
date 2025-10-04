@@ -58,11 +58,13 @@ public class TicketController(ITicketService ticketService) : Controller
         {
             return NotFound();
         }
-
+        
         ViewData["TicketId"] = ticket.Id;
         ViewData["StudentGroupId"] = ticket.StudentGroupId;
         return View("Edit", new UpdateTicketViewModel
         {
+            TicketId = ticket.Id,
+            StudentGroupId = ticket.StudentGroupId,
             Title = ticket.Title,
             Remark = ticket.Remark,
             Status = ticket.Status

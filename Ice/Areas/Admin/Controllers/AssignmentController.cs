@@ -76,4 +76,71 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
 
         return RedirectToAction("Index");
     }
+
+    [HttpGet("{id:long}")]
+    public async Task<IActionResult> Detail(long id, CancellationToken cancellationToken)
+    {
+        var assignment = await assignmentService.GetAssignmentByIdAsync(id, cancellationToken);
+
+        if (assignment == null)
+        {
+            return NotFound();
+        }
+
+        var viewModel = new AssignmentDetailViewModel
+        {
+            Id = assignment.Id,
+            Name = assignment.Name,
+            Description = assignment.Description,
+            SortOrder = assignment.SortOrder,
+            CreatedAt = assignment.CreatedAt,
+            UpdatedAt = assignment.UpdatedAt
+        };
+
+        return View("Detail", viewModel);
+    }
+
+    [HttpGet("{id:long}/edit")]
+    public async Task<IActionResult> Edit(long id, CancellationToken cancellationToken)
+    {
+        var assignment = await assignmentService.GetAssignmentByIdAsync(id, cancellationToken);
+
+        if (assignment == null)
+        {
+            return NotFound();
+        }
+
+        ViewData["AssignmentId"] = assignment.Id;
+        return View("Edit", new UpdateAssignmentViewModel
+        {
+            Name = assignment.Name,
+            Description = assignment.Description
+        });
+    }
+
+    [HttpPost("{id:long}/edit")]
+    public async Task<IActionResult> Edit(
+        long id,
+        [FromForm] UpdateAssignmentViewModel model,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!ModelState.IsValid)
+        {
+            ViewData["AssignmentId"] = id;
+            return View("Edit", model);
+        }
+
+        var assignment = await assignmentService.GetAssignmentByIdAsync(id, cancellationToken);
+        if (assignment == null)
+        {
+            return NotFound();
+        }
+
+        assignment.Name = model.Name;
+        assignment.Description = model.Description;
+        await assignmentService.EditAssignmentAsync(assignment, cancellationToken);
+
+        return RedirectToAction("Detail", new { id });
+    }
 }

@@ -1,0 +1,32 @@
+@model Ice.Areas.Admin.ViewModels.Assignment.UpdateAssignmentViewModel
+@{
+    ViewData["Title"] = "課題編集 | ice";
+    var assignmentId = ViewData["AssignmentId"];
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">課題編集</h1>
+
+    <form method="post" asp-action="Edit" asp-route-id="@assignmentId">
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label">課題名</label>
+            <input asp-for="Name" type="text" class="form-control" required maxlength="100" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">完了要件(チェックポイント)</label>
+            <textarea asp-for="Description" class="form-control" rows="8" required maxlength="1000"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">更新</button>
+            <a asp-action="Detail" asp-route-id="@assignmentId" class="btn btn-secondary">キャンセル</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

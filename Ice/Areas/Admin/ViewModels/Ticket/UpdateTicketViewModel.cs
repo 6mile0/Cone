@@ -5,6 +5,12 @@ namespace Ice.Areas.Admin.ViewModels.Ticket;
 
 public class UpdateTicketViewModel
 {
+    [Required(ErrorMessage = "チケットIDは必須です")]
+    public required long TicketId { get; init; }
+
+    [Required(ErrorMessage = "班IDは必須です")]
+    public required long StudentGroupId { get; init; }
+
     [Required(ErrorMessage = "概要は必須です")]
     [MaxLength(200)]
     public required string Title { get; init; }
