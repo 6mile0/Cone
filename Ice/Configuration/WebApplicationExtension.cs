@@ -1,4 +1,6 @@
-﻿namespace Ice.Configuration;
+﻿using Lib.AspNetCore.ServerSentEvents;
+
+namespace Ice.Configuration;
 
 public static class WebApplicationExtension
 {
@@ -22,6 +24,8 @@ public static class WebApplicationExtension
         app.MapControllerRoute(
             name: "default",
             pattern: "{controller=Home}/{action=Index}/{id?}");
+
+        app.MapServerSentEvents("/sse-endpoint");
 
         return app;
     }

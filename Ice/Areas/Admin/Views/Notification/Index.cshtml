@@ -1,0 +1,22 @@
+@{
+    ViewData["Title"] = "通知受信";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>チケット作成通知受信</h2>
+            <p class="text-muted">このページを開いている間、新しいチケットが作成されると音と視覚効果で通知されます。</p>
+            <div class="alert alert-warning" role="alert" id="interaction-alert">
+                <strong>⚠️ 重要:</strong> 通知音を有効にするため、画面内をクリックまたはタップしてください。
+            </div>
+            <div class="alert alert-info" role="alert">
+                <strong>ステータス:</strong> <span id="connection-status">接続中...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/notification.js" asp-append-version="true"></script>
+}

@@ -5,11 +5,12 @@ using Ice.Db;
 using Ice.Db.Models;
 using Ice.Enums;
 using Ice.Exception;
+using Ice.Services.NotificationService;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ice.Services.TicketService;
 
-public class TicketService(IceDbContext iceDbContext): ITicketService
+public class TicketService(IceDbContext iceDbContext, INotificationService notificationService): ITicketService
 {
     public async Task<IReadOnlyList<Tickets?>> GetAllTicketsAsync(CancellationToken cancellationToken)
     {
@@ -65,8 +66,20 @@ public class TicketService(IceDbContext iceDbContext): ITicketService
         
         // 課題とチケットの関連付け
         await LinkAssignmentToTicketAsync(ticket.Id, addTicketDto.AssignmentId, addTicketDto.StudentGroupId, cancellationToken);
-        
+
         await transaction.CommitAsync(cancellationToken);
+
+        // 学生グループ名を取得
+        var studentGroup = await iceDbContext.StudentGroups
+            .FirstAsync(sg => sg.Id == addTicketDto.StudentGroupId, cancellationToken);
+
+        // SSE通知を送信
+        await notificationService.NotifyTicketCreatedAsync(
+            ticket.Id,
+            ticket.Title,
+            studentGroup.GroupName,
+            targetTutor.FullName
+        );
 
         return new AddTicketResDto
         {

@@ -6,6 +6,7 @@
     <title>@ViewData["Title"] - Cone (コーン)</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/css/notification.css" asp-append-version="true"/>
 </head>
 <body>
 <header>
@@ -26,6 +27,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="AdminUser" asp-action="Index">管理者管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="Admin" asp-controller="Notification" asp-action="Index">通知受信</a>
                     </li>
                 </ul>
             </div>
