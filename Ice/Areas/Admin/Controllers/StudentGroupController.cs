@@ -9,11 +9,13 @@ using Ice.Services.AdminUserService;
 using Ice.Services.AssignmentService;
 using Ice.Services.StudentGroupService;
 using Ice.Services.TicketService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vereyon.Web;
 
 namespace Ice.Areas.Admin.Controllers;
 
+[Authorize(Policy = "Admin")]
 [Area("admin")]
 [Route("[area]/student-groups")]
 public class StudentGroupController(IStudentGroupService studentGroupService, IAssignmentService assignmentService, ITicketService ticketService, IAdminUserService adminUserService, IFlashMessage flashMessage) : Controller

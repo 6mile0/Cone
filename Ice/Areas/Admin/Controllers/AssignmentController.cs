@@ -4,11 +4,13 @@ using Ice.Areas.Admin.ViewModels.StudentGroup;
 using Ice.Exception;
 using Ice.Services.AssignmentService;
 using Ice.Services.AssignmentStudentGroupService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vereyon.Web;
 
 namespace Ice.Areas.Admin.Controllers;
 
+[Authorize(Policy = "Admin")]
 [Area("admin")]
 [Route("[area]/assignments")]
 public class AssignmentController(

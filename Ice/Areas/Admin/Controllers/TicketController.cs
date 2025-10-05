@@ -4,11 +4,13 @@ using Ice.Areas.Admin.ViewModels.Ticket;
 using Ice.Enums;
 using Ice.Exception;
 using Ice.Services.TicketService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vereyon.Web;
 
 namespace Ice.Areas.Admin.Controllers;
 
+[Authorize(Policy = "Admin")]
 [Area("admin")]
 [Route("[area]/tickets/{id:long}")]
 public class TicketController(ITicketService ticketService, IFlashMessage flashMessage) : Controller

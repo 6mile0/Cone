@@ -3,12 +3,14 @@ using Ice.Areas.Student.ViewModels;
 using Ice.Services.AssignmentService;
 using Ice.Services.StudentGroupService;
 using Ice.Services.TicketService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Vereyon.Web;
 
 namespace Ice.Areas.Student.Controllers;
 
+[Authorize(Policy = "AllowedEmailDomain")]
 [Area("student")]
 [Route("tickets/add")]
 public class TicketController(ITicketService ticketService, IAssignmentService assignmentService, IStudentGroupService studentGroupService, IFlashMessage flashMessage) : Controller
