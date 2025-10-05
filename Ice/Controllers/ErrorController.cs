@@ -8,7 +8,7 @@ namespace Ice.Controllers;
 [Route("[controller]")]
 public class ErrorController : Controller
 {
-    [Route("{statusCode}")]
+    [Route("{statusCode:int}")]
     public IActionResult Error(int statusCode)
     {
         return View(
