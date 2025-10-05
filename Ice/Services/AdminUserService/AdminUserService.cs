@@ -20,6 +20,7 @@ public class AdminUserService(IceDbContext iceDbContext): IAdminUserService
         {
             FullName = request.FullName,
             TutorType = request.TutorType,
+            Email = request.Email,
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow
         };

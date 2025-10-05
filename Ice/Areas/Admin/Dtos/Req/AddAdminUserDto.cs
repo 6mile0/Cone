@@ -11,4 +11,8 @@ public class AddAdminUserDto
     [Required]
     [EnumDataType(typeof(TutorTypes))]
     public required TutorTypes TutorType { get; init; }
+    
+    [Required]
+    [EmailAddress]
+    public required string Email { get; init; }
 }

@@ -1,16 +1,19 @@
 ﻿using Ice.Areas.Admin.Dtos.Req;
 using Ice.Areas.Admin.ViewModels.AdminUser;
+using Ice.Configuration;
 using Ice.Enums;
 using Ice.Exception;
 using Ice.Services.AdminUserService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vereyon.Web;
 
 namespace Ice.Areas.Admin.Controllers;
 
+[Authorize(Policy = "Admin")]
 [Area("admin")]
 [Route("[area]/users")]
-public class AdminUserController(IAdminUserService adminUserService, IFlashMessage flashMessage) : Controller
+public class AdminUserController(IAdminUserService adminUserService, IFlashMessage flashMessage, IceConfiguration iceConfiguration) : Controller
 {
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
@@ -42,6 +45,14 @@ public class AdminUserController(IAdminUserService adminUserService, IFlashMessa
         CancellationToken cancellationToken
     )
     {
+        // 特定のメールアドレスドメインのみ許可
+        var emailDomain = model.Email.Split('@').Last();
+        if (!iceConfiguration.AllowedEmailEndPrefixes.Contains(emailDomain))
+        {
+            flashMessage.Danger("許可されていないメールアドレスのドメインです。");
+            return View("Add");
+        }
+        
         if (!ModelState.IsValid)
         {
             return View("Add");
@@ -50,7 +61,8 @@ public class AdminUserController(IAdminUserService adminUserService, IFlashMessa
         await adminUserService.AddAdminUserAsync(new AddAdminUserDto
         {
             FullName = model.FullName,
-            TutorType = model.TutorType
+            TutorType = model.TutorType,
+            Email = model.Email
         }, cancellationToken);
 
         flashMessage.Info("管理ユーザーを追加しました。");

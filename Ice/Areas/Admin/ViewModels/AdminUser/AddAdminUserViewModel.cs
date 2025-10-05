@@ -11,4 +11,8 @@ public class AddAdminUserViewModel
     [Required(ErrorMessage = "種別は必須です")]
     [EnumDataType(typeof(TutorTypes), ErrorMessage = "不正な種別です")]
     public required TutorTypes TutorType { get; init; }
+    
+    [Required(ErrorMessage = "メールアドレスは必須です")]
+    [EmailAddress(ErrorMessage = "不正なメールアドレスです")]
+    public required string Email { get; init; }
 }
