@@ -1,0 +1,23 @@
+﻿services:
+  app:
+    build:
+      context: ReihaCore
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    restart: always
+  db:
+    container_name: ice-db
+    image: postgres:17.5
+    ports:
+      - "5432:5432"
+    volumes:
+      - ice_db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=ice
+      - POSTGRES_USER=ice
+      - POSTGRES_PASSWORD=icepassword
+volumes:
+  ice_db:
