@@ -81,7 +81,10 @@ public static class WebApplicationBuilderExtension
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
             })
-            .AddCookie()
+            .AddCookie(options =>
+            {
+                options.AccessDeniedPath = "/error/403";
+            })
             .AddGoogle(options =>
             {
                 options.ClientId = googleClientId;
