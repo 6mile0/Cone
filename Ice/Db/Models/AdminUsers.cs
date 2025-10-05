@@ -10,11 +10,16 @@ public class AdminUsers
     
     [Required]
     [MaxLength(100)]
-    public required string? FullName { get; set; }
+    public required string FullName { get; set; }
     
     [Required]
     [EnumDataType(typeof(TutorTypes))]
     public required TutorTypes TutorType { get; set; }
+    
+    [Required]
+    [EmailAddress]
+    [MaxLength(255)]
+    public required string Email { get; set; }
     
     [Required]
     public required DateTimeOffset CreatedAt { get; set; }
