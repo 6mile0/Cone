@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Ice.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ice.Db.Models;
 
+[Index(nameof(Email), IsUnique = true)]
 public class AdminUsers
 {
     [Key]

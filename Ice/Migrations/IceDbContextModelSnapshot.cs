@@ -53,6 +53,9 @@ namespace Ice.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.ToTable("AdminUsers");
                 });
 
