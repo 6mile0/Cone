@@ -29,7 +29,13 @@ public class TicketController(ITicketService ticketService, IAssignmentService a
             return RedirectToAction("Index", "Top");
         }
 
-        var assignments = await assignmentService.GetAllAssignmentsAsync(cancellationToken);
+        var assignments = await assignmentService.GetReleasedAssignmentByGroupId(studentGroup.Id, cancellationToken);
+        if (!assignments.Any())
+        {
+            flashMessage.Danger("現在対応可能な課題が存在しません。お近くのTA/SAを呼んでください。");
+            return RedirectToAction("Index", "Top");
+        }
+        
         var isAbleAddTicket = await ticketService.IsAbleAddTicketAsync(studentGroup.Id, cancellationToken);
             
         var enumerableAssignments = assignments
