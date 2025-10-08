@@ -25,7 +25,6 @@ public static class WebApplicationExtension
         app.UseAuthentication();
         app.UseAuthorization();
 
-
         app.MapControllerRoute(
             name: "default",
             pattern: "{controller=Top}/{action=Index}/{id?}");
