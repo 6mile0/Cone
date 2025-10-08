@@ -14,6 +14,14 @@ public static class WebApplicationExtension
             app.UseCustomExceptionHandler();
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
+
+            // Always use HTTPS
+            app.Use((context, next) =>
+                {
+                    context.Request.Scheme = "https";
+                    return next();
+                }
+            );
         }
 
         app.UseHttpsRedirection();
@@ -22,7 +30,7 @@ public static class WebApplicationExtension
         app.UseRouting();
 
         app.UseAuthorization();
-        
+
 
         app.MapControllerRoute(
             name: "default",
@@ -32,7 +40,7 @@ public static class WebApplicationExtension
 
         return app;
     }
-    
+
     private static IApplicationBuilder UseCustomExceptionHandler(this IApplicationBuilder app)
     {
         return app.UseExceptionHandler(errorApp =>
