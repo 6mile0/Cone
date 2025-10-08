@@ -42,11 +42,12 @@ public class AssignmentService(IceDbContext iceDbContext) : IAssignmentService
         CancellationToken cancellationToken)
     {
         // グループごとに解放されている課題を取得
-        var assignmentIds = iceDbContext.StudentGroupAssignmentsProgress
-            .Where(sgap => sgap.StudentGroupId == groupId);
-
         return await iceDbContext.Assignments
-            .Where(a => assignmentIds.Any(sgap => sgap.AssignmentId == a.Id))
+            .Include(a => a.TicketAssignments)
+            .Include(a => a.StudentGroupAssignmentsProgress)
+            .Where(a => a.StudentGroupAssignmentsProgress != null &&
+                        a.StudentGroupAssignmentsProgress.Any(p =>
+                            p.StudentGroupId == groupId && p.Status != AssignmentProgress.NotStarted))
             .OrderBy(a => a.SortOrder)
             .ToListAsync(cancellationToken);
     }
