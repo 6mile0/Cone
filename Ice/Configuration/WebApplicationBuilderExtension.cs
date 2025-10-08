@@ -22,6 +22,8 @@ public static class WebApplicationBuilderExtension
                 .Select(x => IPNetwork.Parse(x))
                 .ToList()
                 .ForEach(x => options.KnownNetworks.Add(x));
+
+            builder.ConfigureTrustCloudFlareProxy(options);
             
             options.ForwardLimit = null;
         });
@@ -136,6 +138,46 @@ public static class WebApplicationBuilderExtension
                 });
 
         webApplicationBuilder.Services.AddCascadingAuthenticationState();
+
+        return webApplicationBuilder;
+    }
+    
+    private static WebApplicationBuilder ConfigureTrustCloudFlareProxy(
+        this WebApplicationBuilder webApplicationBuilder,
+        ForwardedHeadersOptions options
+    )
+    {
+        var urls = new[] { "https://www.cloudflare.com/ips-v4", "https://www.cloudflare.com/ips-v6" };
+
+        using var httpClient = new HttpClient();
+
+        var allNetworks = new List<IPNetwork>();
+
+        foreach (var url in urls)
+        {
+            try
+            {
+                using var webRequest = new HttpRequestMessage(HttpMethod.Get, url);
+                using var response = httpClient.Send(webRequest);
+                response.EnsureSuccessStatusCode();
+                using var reader = new StreamReader(response.Content.ReadAsStream());
+                var text = reader.ReadToEnd();
+
+                var networks = text
+                    .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(line => line.Trim())
+                    .Where(line => !string.IsNullOrWhiteSpace(line) && !line.StartsWith($"#"))
+                    .Select(s => IPNetwork.Parse(s));
+
+                allNetworks.AddRange(networks);
+            }
+            catch (System.Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to fetch Cloudflare IPs from {url}", ex);
+            }
+        }
+
+        allNetworks.ForEach(x => options.KnownNetworks.Add(x));
 
         return webApplicationBuilder;
     }
