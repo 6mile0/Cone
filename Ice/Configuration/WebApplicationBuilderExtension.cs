@@ -109,6 +109,12 @@ public static class WebApplicationBuilderExtension
                 options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
 
                 options.CallbackPath = "/signin-google";
+                
+                options.Events.OnRedirectToAuthorizationEndpoint = context =>
+                {
+                    Console.WriteLine($"Redirecting to: {context.RedirectUri}");
+                    return Task.CompletedTask;
+                };
             });
 
         // 管理者ポリシー登録
