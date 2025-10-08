@@ -112,7 +112,7 @@ public static class WebApplicationBuilderExtension
                 
                 options.Events.OnRedirectToAuthorizationEndpoint = context =>
                 {
-                    context.Response.Redirect(context.RedirectUri);
+                    Console.WriteLine($"[DEBUG] Redirecting to: {context.RedirectUri}");
                     return Task.CompletedTask;
                 };
             });
