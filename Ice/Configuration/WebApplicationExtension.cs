@@ -7,21 +7,14 @@ public static class WebApplicationExtension
 {
     public static WebApplication UseIce(this WebApplication app)
     {
+        app.UseForwardedHeaders();
+        
         // Configure the HTTP request pipeline.
         if (!app.Environment.IsDevelopment())
         {
-            app.UseForwardedHeaders();
             app.UseCustomExceptionHandler();
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
-
-            // Always use HTTPS
-            app.Use((context, next) =>
-                {
-                    context.Request.Scheme = "https";
-                    return next();
-                }
-            );
         }
 
         app.UseHttpsRedirection();
@@ -29,6 +22,7 @@ public static class WebApplicationExtension
 
         app.UseRouting();
 
+        app.UseAuthentication();
         app.UseAuthorization();
 
 
