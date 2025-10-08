@@ -104,6 +104,17 @@ public static class WebApplicationBuilderExtension
             {
                 options.ClientId = googleClientId;
                 options.ClientSecret = googleClientSecret;
+
+                options.CorrelationCookie.SameSite = SameSiteMode.None;
+                options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+
+                options.CallbackPath = "/signin-google";
+                
+                options.Events.OnRedirectToAuthorizationEndpoint = context =>
+                {
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                };
             });
 
         // 管理者ポリシー登録
