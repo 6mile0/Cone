@@ -3,6 +3,7 @@ using Ice.Db;
 using Ice.Db.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ice.Configuration;
@@ -11,6 +12,20 @@ public static class WebApplicationBuilderExtension
 {
     public static WebApplicationBuilder AddIceConfiguration(this WebApplicationBuilder builder)
     {
+        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto |
+                                       ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedPrefix;
+            builder.Configuration.GetSection("ForwardedHeaders")
+                .GetSection("KnownNetworks")
+                .Get<string[]>()?
+                .Select(x => IPNetwork.Parse(x))
+                .ToList()
+                .ForEach(x => options.KnownNetworks.Add(x));
+            
+            options.ForwardLimit = null;
+        });
+        
         builder.Services.AddControllersWithViews();
         builder.Services.AddRazorPages();
 
