@@ -17,8 +17,8 @@ public class CustomAdminHandler(IceDbContext iceDbContext, IceConfiguration iceC
         if (string.IsNullOrEmpty(email))
             return;
         
-        var isEmergencyAdmin = iceConfiguration.AllowedEmailEndPrefixes
-            .Any(prefix => email.EndsWith(prefix, StringComparison.OrdinalIgnoreCase));
+        // 緊急管理者メールアドレスリストに含まれているか確認
+        var isEmergencyAdmin = iceConfiguration.EmergencyAdminEmails.Contains(email);
         
         var isAdmin = await iceDbContext.AdminUsers
             .Where(u => u.Email == email)

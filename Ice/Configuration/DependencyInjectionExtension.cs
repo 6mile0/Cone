@@ -35,8 +35,10 @@ public static class DependencyInjectionExtension
         
         // Configuration settings
         var allowedEmailEndPrefixes = configuration.GetSection("AllowedEmailEndPrefixes").Get<List<string>>() ?? [];
+        var emergencyAdminEmails = configuration.GetSection("EmergencyAdminGoogleAccounts").Get<List<string>>() ?? [];
         services.AddSingleton(new IceConfiguration
         {
+            EmergencyAdminEmails = emergencyAdminEmails,
             AllowedEmailEndPrefixes = allowedEmailEndPrefixes
         });
         
