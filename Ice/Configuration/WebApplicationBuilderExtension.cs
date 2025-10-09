@@ -100,16 +100,15 @@ public static class WebApplicationBuilderExtension
             })
             .AddCookie(options =>
             {
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.AccessDeniedPath = "/error/403";
             })
             .AddGoogle(options =>
             {
                 options.ClientId = googleClientId;
                 options.ClientSecret = googleClientSecret;
-
-                options.CorrelationCookie.SameSite = SameSiteMode.None;
+                
                 options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-
                 options.CallbackPath = "/signin-google";
             });
 
