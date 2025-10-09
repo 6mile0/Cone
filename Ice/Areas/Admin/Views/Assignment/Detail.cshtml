@@ -1,3 +1,4 @@
+@using Ice.Extensions
 @model Ice.Areas.Admin.ViewModels.Assignment.AssignmentDetailViewModel
 @{
     ViewData["Title"] = "課題詳細";
@@ -42,7 +43,7 @@
                     <strong>作成日時</strong>
                 </div>
                 <div class="col-md-9">
-                    @Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")
+                    @Model.CreatedAt.ToJst().ToString("yyyy/MM/dd HH:mm")
                 </div>
             </div>
 
@@ -51,7 +52,7 @@
                     <strong>更新日時</strong>
                 </div>
                 <div class="col-md-9">
-                    @Model.UpdatedAt.ToString("yyyy/MM/dd HH:mm")
+                    @Model.UpdatedAt.ToJst().ToString("yyyy/MM/dd HH:mm")
                 </div>
             </div>
         </div>
