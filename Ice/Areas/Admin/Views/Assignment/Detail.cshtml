@@ -113,7 +113,7 @@
                                                 <td>
                                                     <a asp-controller="StudentGroup" asp-action="Detail" asp-route-id="@group.Id">@group.GroupName</a>
                                                 </td>
-                                                <td>@group.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                                                <td>@group.UpdatedAt.ToJst().ToString("yyyy/MM/dd HH:mm")</td>
                                                 <td>
                                                     <form asp-action="UnassignStudentGroup" asp-route-assignmentId="@Model.Id" asp-route-studentGroupId="@group.Id" method="post" class="d-inline">
                                                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('この学生グループから課題の割り当てを解除しますか？');">解除</button>
