@@ -12,9 +12,14 @@ namespace Ice.Services.TicketService;
 
 public class TicketService(IceDbContext iceDbContext, INotificationService notificationService): ITicketService
 {
-    public async Task<IReadOnlyList<Tickets?>> GetAllTicketsAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Tickets>> GetAllTicketsAsync(CancellationToken cancellationToken)
     {
-        return await iceDbContext.Tickets.ToListAsync(cancellationToken);
+        return await iceDbContext.Tickets
+            .Include(t => t.StudentGroup)
+            .Include(t => t.TicketAdminUser)
+            .ThenInclude(tau => tau!.AdminUser)
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<Tickets?> GetTicketByIdAsync(long ticketId, CancellationToken cancellationToken)

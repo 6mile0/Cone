@@ -10,7 +10,7 @@ public interface ITicketService
     /// <summary>
     /// Gets all ticket,
     /// </summary>
-    Task<IReadOnlyList<Tickets?>> GetAllTicketsAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyList<Tickets>> GetAllTicketsAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Get a ticket by its ID.

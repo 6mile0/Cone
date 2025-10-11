@@ -1,0 +1,75 @@
+@using Ice.Areas.Admin.ViewModels.Ticket
+@using Ice.Enums
+@using Ice.Extensions
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Vereyon.Web
+@model IEnumerable<Ice.Areas.Admin.ViewModels.Ticket.TicketViewModel>
+@{
+    ViewData["Title"] = "チケット一覧";
+    var allTickets = Model.ToList();
+    var inProgressTickets = allTickets.Where(t => t.Status == TicketStatus.InProgress).ToList();
+    var resolvedTickets = allTickets.Where(t => t.Status == TicketStatus.Resolved).ToList();
+    var pendingTickets = allTickets.Where(t => t.Status == TicketStatus.Pending).ToList();
+}
+@addTagHelper *, Vereyon.Web.FlashMessage
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>チケット一覧</h1>
+    </div>
+    <flash dismissable="true" />
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info" role="alert">
+            チケットが存在しません。
+        </div>
+    }
+    else
+    {
+        <ul class="nav nav-tabs" id="ticketTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="true">
+                    すべて <span class="badge bg-secondary">@allTickets.Count</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="in-progress-tab" data-bs-toggle="tab" data-bs-target="#in-progress" type="button" role="tab" aria-controls="in-progress" aria-selected="false">
+                    対応中 <span class="badge bg-warning">@inProgressTickets.Count</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="false">
+                    保留中 <span class="badge bg-danger">@pendingTickets.Count</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="resolved-tab" data-bs-toggle="tab" data-bs-target="#resolved" type="button" role="tab" aria-controls="resolved" aria-selected="false">
+                    解決済み <span class="badge bg-success">@resolvedTickets.Count</span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="ticketTabsContent">
+            <!-- すべてタブ -->
+            <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+                <partial name="_TicketTable" model="allTickets" />
+            </div>
+
+            <!-- 対応中タブ -->
+            <div class="tab-pane fade" id="in-progress" role="tabpanel" aria-labelledby="in-progress-tab">
+                <partial name="_TicketTable" model="inProgressTickets" />
+            </div>
+
+            <!-- 保留中タブ -->
+            <div class="tab-pane fade" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                <partial name="_TicketTable" model="pendingTickets" />
+            </div>
+
+            <!-- 解決済みタブ -->
+            <div class="tab-pane fade" id="resolved" role="tabpanel" aria-labelledby="resolved-tab">
+                <partial name="_TicketTable" model="resolvedTickets" />
+            </div>
+        </div>
+    }
+</div>

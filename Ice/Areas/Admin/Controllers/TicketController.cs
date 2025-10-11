@@ -12,9 +12,29 @@ namespace Ice.Areas.Admin.Controllers;
 
 [Authorize(Policy = "Admin")]
 [Area("admin")]
-[Route("[area]/tickets/{id:long}")]
+[Route("[area]/tickets")]
 public class TicketController(ITicketService ticketService, IFlashMessage flashMessage) : Controller
 {
+    [Route("")]
+    [HttpGet]
+    public async Task<IActionResult> Index(CancellationToken cancellationToken)
+    {
+        var tickets = await ticketService.GetAllTicketsAsync(cancellationToken);
+
+        var viewModels = tickets.Select(t => new TicketViewModel
+        {
+            Id = t.Id,
+            Title = t.Title,
+            Status = t.Status,
+            AssignedTo = t.TicketAdminUser?.AdminUser,
+            CreatedAt = t.CreatedAt,
+            UpdatedAt = t.UpdatedAt
+        }).ToList();
+
+        return View("Index", viewModels);
+    }
+
+    [Route("{id:long}")]
     [HttpGet]
     public async Task<IActionResult> Detail(long id, CancellationToken cancellationToken)
     {
@@ -23,8 +43,7 @@ public class TicketController(ITicketService ticketService, IFlashMessage flashM
         if (ticket?.StudentGroup == null)
         {
             flashMessage.Danger("指定されたチケットは存在しません。");
-            // TODO: チケット一覧がないので、ひとまず学生グループ一覧にリダイレクト
-            return RedirectToAction("Index", "StudentGroup", new { area = "admin" });
+            return RedirectToAction("Index", "Ticket", new { area = "admin" });
         }
         
         var assignedTo = ticket.TicketAdminUser != null ? new AdminUserViewModel
@@ -52,7 +71,8 @@ public class TicketController(ITicketService ticketService, IFlashMessage flashM
         return View("Detail", viewModel);
     }
 
-    [HttpGet("edit")]
+    [Route("{id:long}/edit")]
+    [HttpGet]
     public async Task<IActionResult> Edit(long id, CancellationToken cancellationToken)
     {
         var ticket = await ticketService.GetTicketByIdAsync(id, cancellationToken);
@@ -60,7 +80,7 @@ public class TicketController(ITicketService ticketService, IFlashMessage flashM
         if (ticket == null)
         {
             flashMessage.Danger("指定されたチケットは存在しません。");
-            return RedirectToAction("Index", "StudentGroup", new { area = "admin" });
+            return RedirectToAction("Index", "Ticket", new { area = "admin" });
         }
 
         return View("Edit", new UpdateTicketViewModel
@@ -73,7 +93,8 @@ public class TicketController(ITicketService ticketService, IFlashMessage flashM
         });
     }
 
-    [HttpPost("edit")]
+    [Route("{id:long}/edit")]
+    [HttpPost]
     public async Task<IActionResult> Edit(
         long id,
         [FromForm] UpdateTicketViewModel model,
@@ -86,7 +107,7 @@ public class TicketController(ITicketService ticketService, IFlashMessage flashM
             if (ticket == null)
             {
                 flashMessage.Danger("指定されたチケットは存在しません。");
-                return RedirectToAction("Index", "StudentGroup", new { area = "admin" });
+                return RedirectToAction("Index", "Ticket", new { area = "admin" });
             }
 
             return View("Edit", new UpdateTicketViewModel

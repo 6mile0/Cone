@@ -59,15 +59,15 @@
                                     <form asp-action="UpdateAssignmentStatus" asp-route-studentGroupId="@Model.Id" asp-route-assignmentId="@assignment.AssignmentId" method="post" class="d-inline">
                                         <select name="status" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
                                             <option value="">ステータスを選択してください</option>
-                                            @if (assignment.StatusEnum != Ice.Enums.AssignmentProgress.NotStarted)
+                                            @if (assignment.StatusEnum != AssignmentProgress.NotStarted)
                                             {
                                                 <option value="NotStarted">未着手</option>
                                             }
-                                            @if (assignment.StatusEnum != Ice.Enums.AssignmentProgress.InProgress)
+                                            @if (assignment.StatusEnum != AssignmentProgress.InProgress)
                                             {
                                                 <option value="InProgress">進行中</option>
                                             }
-                                            @if (assignment.StatusEnum != Ice.Enums.AssignmentProgress.Completed)
+                                            @if (assignment.StatusEnum != AssignmentProgress.Completed)
                                             {
                                                 <option value="Completed">完了</option>
                                             }
@@ -116,17 +116,17 @@
                                 <td>
                                     @switch (ticket.Status)
                                     {
-                                        case "対応中":
-                                            <span class="badge bg-warning text-dark">@ticket.Status</span>
+                                        case TicketStatus.InProgress:
+                                            <span class="badge bg-warning text-dark">対応中</span>
                                             break;
-                                        case "解決済み":
-                                            <span class="badge bg-success">@ticket.Status</span>
+                                        case TicketStatus.Resolved:
+                                            <span class="badge bg-success">解決済み</span>
                                             break;
-                                        case "トラブルなどで保留中":
-                                            <span class="badge bg-danger">@ticket.Status</span>
+                                        case TicketStatus.Pending:
+                                            <span class="badge bg-danger">トラブルなどで保留中</span>
                                             break;
                                         default:
-                                            <span class="badge bg-info">@ticket.Status</span>
+                                            <span class="badge bg-info">不明</span>
                                             break;
                                     }
                                 </td>

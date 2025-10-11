@@ -103,7 +103,7 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
             {
                 Id = t.Id,
                 Title = t.Title,
-                Status = GetTicketStatusText(t.Status),
+                Status = t.Status,
                 CreatedAt = t.CreatedAt,
                 AssignedTo = t.TicketAdminUser?.AdminUser,
                 UpdatedAt = t.UpdatedAt
@@ -231,16 +231,5 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
 
         flashMessage.Info("課題のステータスを更新しました。");
         return RedirectToAction("Detail", new { id = studentGroupId });
-    }
-
-    private static string GetTicketStatusText(TicketStatus status)
-    {
-        return status switch
-        {
-            TicketStatus.InProgress => "対応中",
-            TicketStatus.Resolved => "解決済み",
-            TicketStatus.Pending => "トラブルなどで保留中",
-            _ => "不明"
-        };
     }
 }
