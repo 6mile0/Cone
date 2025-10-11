@@ -1,10 +1,12 @@
-﻿using Ice.Services.AdminUserService;
+﻿using Ice.Db.Models;
+using Ice.Services.AdminUserService;
 using Ice.Services.AssignmentService;
 using Ice.Services.AssignmentStudentGroupService;
 using Ice.Services.NotificationService;
 using Ice.Services.StudentGroupService;
 using Ice.Services.TicketService;
 using Lib.AspNetCore.ServerSentEvents;
+using Microsoft.AspNetCore.Authorization;
 using Vereyon.Web;
 
 namespace Ice.Configuration;
@@ -24,9 +26,22 @@ public static class DependencyInjectionExtension
         // Server-Sent Events
         services.AddServerSentEvents();
         services.AddSingleton<INotificationService, NotificationService>();
+        
+        // Custom Admin AdminRequirement
+        services.AddScoped<IAuthorizationHandler, CustomAdminHandler>();
 
         // Register FlashMessage service
         services.AddFlashMessage();
+        
+        // Configuration settings
+        var allowedEmailEndPrefixes = configuration.GetSection("AllowedEmailEndPrefixes").Get<List<string>>() ?? [];
+        var emergencyAdminEmails = configuration.GetSection("EmergencyAdminGoogleAccounts").Get<List<string>>() ?? [];
+        services.AddSingleton(new IceConfiguration
+        {
+            EmergencyAdminEmails = emergencyAdminEmails,
+            AllowedEmailEndPrefixes = allowedEmailEndPrefixes
+        });
+        
         return services;
     }
 }

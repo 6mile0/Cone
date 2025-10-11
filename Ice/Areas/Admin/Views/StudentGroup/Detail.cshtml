@@ -1,4 +1,5 @@
 @using Ice.Enums
+@using Ice.Extensions
 @model Ice.Areas.Admin.ViewModels.StudentGroup.StudentGroupDetailViewModel
 @{
     ViewData["Title"] = "学生グループ詳細";
@@ -140,7 +141,7 @@
                                     }
                                     <a asp-action="AssignTicket" asp-route-studentGroupId="@Model.Id" asp-route-ticketId="@ticket.Id" class="btn btn-sm btn-outline-primary ms-2">担当者変更</a>
                                 </td>
-                                <td>@ticket.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                                <td>@ticket.UpdatedAt.ToJst().ToString("yyyy/MM/dd HH:mm")</td>
                             </tr>
                         }
                         </tbody>

@@ -1,9 +1,11 @@
 ﻿using Ice.Areas.Student.ViewModels.Top;
 using Ice.Services.StudentGroupService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ice.Areas.Student.Controllers;
 
+[Authorize(Policy = "AllowedEmailDomain")]
 [Area("Student")]
 [Route("/")]
 public class TopController(IStudentGroupService studentGroupService) : Controller

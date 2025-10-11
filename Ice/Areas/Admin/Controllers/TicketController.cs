@@ -4,11 +4,13 @@ using Ice.Areas.Admin.ViewModels.Ticket;
 using Ice.Enums;
 using Ice.Exception;
 using Ice.Services.TicketService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vereyon.Web;
 
 namespace Ice.Areas.Admin.Controllers;
 
+[Authorize(Policy = "Admin")]
 [Area("admin")]
 [Route("[area]/tickets/{id:long}")]
 public class TicketController(ITicketService ticketService, IFlashMessage flashMessage) : Controller
@@ -24,12 +26,15 @@ public class TicketController(ITicketService ticketService, IFlashMessage flashM
             // TODO: チケット一覧がないので、ひとまず学生グループ一覧にリダイレクト
             return RedirectToAction("Index", "StudentGroup", new { area = "admin" });
         }
-
-        if (ticket.TicketAdminUser?.AdminUser == null)
+        
+        var assignedTo = ticket.TicketAdminUser != null ? new AdminUserViewModel
         {
-            flashMessage.Danger("チケットの担当者が設定されていません。");
-            return RedirectToAction("Index", "StudentGroup", new { area = "admin" });
-        }
+            Id = ticket.TicketAdminUser.Id,
+            FullName = ticket.TicketAdminUser.AdminUser.FullName,
+            TutorType = Enum.Parse<TutorTypes>(ticket.TicketAdminUser.AdminUser.TutorType.ToString()),
+            CreatedAt = ticket.TicketAdminUser.CreatedAt,
+            UpdatedAt = ticket.TicketAdminUser.UpdatedAt
+        } : null;
 
         var viewModel = new TicketDetailViewModel
         {
@@ -39,14 +44,7 @@ public class TicketController(ITicketService ticketService, IFlashMessage flashM
             Remark = ticket.Remark,
             StudentGroupId = ticket.StudentGroupId,
             StudentGroupName = ticket.StudentGroup.GroupName,
-            AssignedTo = new AdminUserViewModel
-            {
-                Id = ticket.TicketAdminUser.AdminUser.Id,
-                FullName = ticket.TicketAdminUser.AdminUser.FullName,
-                TutorType = Enum.Parse<TutorTypes>(ticket.TicketAdminUser.AdminUser.TutorType.ToString()),
-                CreatedAt = ticket.TicketAdminUser.AdminUser.CreatedAt,
-                UpdatedAt = ticket.TicketAdminUser.AdminUser.UpdatedAt
-            },
+            AssignedTo = assignedTo,
             CreatedAt = ticket.CreatedAt,
             UpdatedAt = ticket.UpdatedAt
         };
