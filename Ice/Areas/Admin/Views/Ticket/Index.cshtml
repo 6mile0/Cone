@@ -1,0 +1,194 @@
+@using Ice.Areas.Admin.ViewModels.Ticket
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Vereyon.Web
+@model TicketViewModelList
+@{
+    ViewData["Title"] = "チケット一覧";
+}
+@addTagHelper *, Vereyon.Web.FlashMessage
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>チケット一覧</h1>
+    </div>
+    <flash dismissable="true" />
+
+    @if (Model.AdminUsers.Any())
+    {
+        <div class="mb-3">
+            <label for="assigneeFilter" class="form-label">担当者でフィルタ:</label>
+            <select id="assigneeFilter" class="form-select" style="max-width: 300px;">
+                <option value="">すべての担当者</option>
+                <option value="unassigned">未割当</option>
+                @foreach (var adminUser in Model.AdminUsers)
+                {
+                    <option value="@adminUser.Id">@adminUser.FullName</option>
+                }
+            </select>
+        </div>
+    }
+
+    @if (!Model.Tickets.Any())
+    {
+        <div class="alert alert-info" role="alert">
+            チケットが存在しません。
+        </div>
+    }
+    else
+    {
+        <ul class="nav nav-tabs" id="ticketTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="true">
+                    すべて <span class="badge bg-secondary">@Model.Tickets.Count</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="in-progress-tab" data-bs-toggle="tab" data-bs-target="#in-progress" type="button" role="tab" aria-controls="in-progress" aria-selected="false">
+                    対応中 <span class="badge bg-warning">@Model.InProgressTickets.Count</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="false">
+                    保留中 <span class="badge bg-danger">@Model.PendingTickets.Count</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="resolved-tab" data-bs-toggle="tab" data-bs-target="#resolved" type="button" role="tab" aria-controls="resolved" aria-selected="false">
+                    解決済み <span class="badge bg-success">@Model.SolvedTickets.Count</span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="ticketTabsContent">
+            <!-- すべてタブ -->
+            <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+                <partial name="_TicketTable" model="Model.Tickets" />
+            </div>
+
+            <!-- 対応中タブ -->
+            <div class="tab-pane fade" id="in-progress" role="tabpanel" aria-labelledby="in-progress-tab">
+                <partial name="_TicketTable" model="Model.InProgressTickets" />
+            </div>
+
+            <!-- 保留中タブ -->
+            <div class="tab-pane fade" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                <partial name="_TicketTable" model="Model.PendingTickets" />
+            </div>
+
+            <!-- 解決済みタブ -->
+            <div class="tab-pane fade" id="resolved" role="tabpanel" aria-labelledby="resolved-tab">
+                <partial name="_TicketTable" model="Model.SolvedTickets" />
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const assigneeFilter = document.getElementById('assigneeFilter');
+            const ticketTables = document.querySelectorAll('.table tbody');
+            const LOCAL_STORAGE_KEY = 'ticketAssigneeFilter';
+
+            if (!assigneeFilter) return;
+
+            // localStorageから保存された値を復元
+            const savedFilter = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (savedFilter) {
+                assigneeFilter.value = savedFilter;
+                filterTickets(savedFilter);
+            }
+
+            // フィルタ変更時の処理
+            assigneeFilter.addEventListener('change', function() {
+                const filterValue = this.value;
+                localStorage.setItem(LOCAL_STORAGE_KEY, filterValue);
+                filterTickets(filterValue);
+                updateBadgeCounts();
+            });
+
+            function filterTickets(filterValue) {
+                ticketTables.forEach(function(tbody) {
+                    const rows = tbody.querySelectorAll('tr');
+                    rows.forEach(function(row) {
+                        const assigneeCell = row.querySelector('td:nth-child(3)');
+                        if (!assigneeCell) return;
+
+                        const assigneeText = assigneeCell.textContent.trim();
+                        let shouldShow = true;
+
+                        if (filterValue === '') {
+                            // すべての担当者を表示
+                            shouldShow = true;
+                        } else if (filterValue === 'unassigned') {
+                            // 未割当のみ表示
+                            shouldShow = assigneeText === '未割当';
+                        } else {
+                            // 特定の担当者のみ表示
+                            const selectedOption = assigneeFilter.querySelector(`option[value="${filterValue}"]`);
+                            if (selectedOption) {
+                                const assigneeName = selectedOption.textContent;
+                                shouldShow = assigneeText === assigneeName;
+                            }
+                        }
+
+                        row.style.display = shouldShow ? '' : 'none';
+                    });
+                });
+
+                // 各タブで空のメッセージを更新
+                updateEmptyMessages();
+            }
+
+            function updateEmptyMessages() {
+                const tabPanes = document.querySelectorAll('.tab-pane');
+                tabPanes.forEach(function(pane) {
+                    const table = pane.querySelector('.table');
+                    const emptyAlert = pane.querySelector('.alert-info');
+
+                    if (table) {
+                        const tbody = table.querySelector('tbody');
+                        const visibleRows = Array.from(tbody.querySelectorAll('tr')).filter(row => row.style.display !== 'none');
+
+                        // 既存の空メッセージを削除
+                        if (emptyAlert) {
+                            emptyAlert.remove();
+                        }
+
+                        // 表示可能な行がない場合、空メッセージを表示
+                        if (visibleRows.length === 0) {
+                            const newAlert = document.createElement('div');
+                            newAlert.className = 'alert alert-info mt-3';
+                            newAlert.role = 'alert';
+                            newAlert.textContent = '該当するチケットはありません。';
+                            table.parentNode.insertBefore(newAlert, table);
+                            table.style.display = 'none';
+                        } else {
+                            table.style.display = '';
+                        }
+                    }
+                });
+            }
+
+            function updateBadgeCounts() {
+                const tabs = [
+                    { id: 'all-tab', selector: '#all tbody' },
+                    { id: 'in-progress-tab', selector: '#in-progress tbody' },
+                    { id: 'pending-tab', selector: '#pending tbody' },
+                    { id: 'resolved-tab', selector: '#resolved tbody' }
+                ];
+
+                tabs.forEach(function(tab) {
+                    const tabButton = document.getElementById(tab.id);
+                    const badge = tabButton.querySelector('.badge');
+                    const tbody = document.querySelector(tab.selector);
+
+                    if (tbody && badge) {
+                        const visibleRows = Array.from(tbody.querySelectorAll('tr')).filter(row => row.style.display !== 'none');
+                        badge.textContent = visibleRows.length.toString()
+                    }
+                });
+            }
+        });
+    </script>
+}
