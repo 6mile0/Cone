@@ -62,19 +62,26 @@
                 </div>
             </div>
 
-            <div class="row mb-3">
+            <div class="row mb-3 align-items-center">
                 <div class="col-md-3">
                     <strong>担当者</strong>
                 </div>
                 <div class="col-md-9">
-                    @if (Model.AssignedTo != null)
-                    {
-                        @Model.AssignedTo.FullName
-                    }
-                    else
-                    {
-                        <em>未割当</em>
-                    }
+                    <form asp-action="AssignAdminUser" asp-route-id="@Model.Id" method="post" class="d-flex align-items-center gap-2" onsubmit="return confirmAssignment(event)">
+                        <select name="adminUserId" id="adminUserSelect" class="form-select" style="max-width: 300px;">
+                            @if (Model.AssignedTo == null)
+                            {
+                                <option value="" selected disabled>担当者を選択してください</option>
+                            }
+                            @foreach (var adminUser in Model.AdminUsers)
+                            {
+                                <option value="@adminUser.Id" selected="@(Model.AssignedTo?.Id == adminUser.Id)">
+                                    @adminUser.FullName
+                                </option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm">変更</button>
+                    </form>
                 </div>
             </div>
             
@@ -116,3 +123,13 @@
         </div>
     </div>
 </div>
+
+<script>
+function confirmAssignment(event) {
+    const select = document.getElementById('adminUserSelect');
+    const selectedOption = select.options[select.selectedIndex];
+    const adminUserName = selectedOption.text;
+
+    return confirm(`担当者を「${adminUserName}」に変更してもよろしいですか?`);
+}
+</script>

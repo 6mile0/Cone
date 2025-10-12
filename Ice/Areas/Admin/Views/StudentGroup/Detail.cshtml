@@ -139,7 +139,6 @@
                                     {
                                         @ticket.AssignedTo.FullName <span>(@if(ticket.AssignedTo.TutorType == TutorTypes.TeachingAssistant) { <span>TA</span> } else { <span>SA</span> })</span>
                                     }
-                                    <a asp-action="AssignTicket" asp-route-studentGroupId="@Model.Id" asp-route-ticketId="@ticket.Id" class="btn btn-sm btn-outline-primary ms-2">担当者変更</a>
                                 </td>
                                 <td>@ticket.UpdatedAt.ToJst().ToString("yyyy/MM/dd HH:mm")</td>
                             </tr>

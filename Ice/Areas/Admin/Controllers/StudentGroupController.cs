@@ -113,89 +113,89 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
         return View("Detail", viewModel);
     }
 
-    [HttpGet("{studentGroupId:long}/tickets/{ticketId:long}/assign")]
-    public async Task<IActionResult> AssignTicket(long studentGroupId, long ticketId, CancellationToken cancellationToken)
-    {
-        var ticket = await ticketService.GetTicketByIdAsync(ticketId, cancellationToken);
-
-        if (ticket == null || ticket.StudentGroupId != studentGroupId)
-        {
-            flashMessage.Danger("チケットが見つかりません。");
-            return RedirectToAction("Detail", new { id = studentGroupId });
-        }
-
-        var adminUsers = await adminUserService.GetAllAdminUsersAsync(cancellationToken);
-        var assignedAdminUser = adminUsers.Select(au => new AdminUserViewModel
-        {
-            Id = au.Id,
-            FullName = au.FullName,
-            TutorType = Enum.Parse<TutorTypes>(au.TutorType.ToString()),
-            CreatedAt = au.CreatedAt,
-            UpdatedAt = au.UpdatedAt
-        }).ToImmutableList();
-
-        return View("AssignTicket", new AssignTicketViewModel
-        {
-            TicketId = ticket.Id,
-            StudentGroupId = ticket.StudentGroupId,
-            Title = ticket.Title,
-            CurrentAdminUserId = ticket.TicketAdminUser?.AdminUserId,
-            AdminUsers = assignedAdminUser,
-            StudentGroupName = ticket.StudentGroup.GroupName,
-        });
-    }
-
-    [HttpPost("{studentGroupId:long}/tickets/{ticketId:long}/assign")]
-    public async Task<IActionResult> AssignTicket(
-        long studentGroupId,
-        long ticketId,
-        [FromForm] AssignTicketViewModel model,
-        CancellationToken cancellationToken
-    )
-    {
-        var studentGroup = await studentGroupService.GetStudentGroupByIdAsync(studentGroupId, cancellationToken);
-        var ticket = await ticketService.GetTicketByIdAsync(ticketId, cancellationToken);
-        if (studentGroup == null || ticket == null || ticket.StudentGroupId != studentGroupId)
-        {
-            flashMessage.Danger("チケットが見つかりません。");
-            return RedirectToAction("Detail", new { id = studentGroupId });
-        }
-        
-        var adminUsers = await adminUserService.GetAllAdminUsersAsync(cancellationToken);
-        var assignedAdminUser = adminUsers.Select(au => new AdminUserViewModel
-        {
-            Id = au.Id,
-            FullName = au.FullName,
-            TutorType = Enum.Parse<TutorTypes>(au.TutorType.ToString()),
-            CreatedAt = au.CreatedAt,
-            UpdatedAt = au.UpdatedAt
-        }).ToImmutableList();
-        
-        if (!ModelState.IsValid)
-        {
-            var viewModel = new AssignTicketViewModel
-            {
-                TicketId = model.TicketId,
-                StudentGroupId = model.StudentGroupId,
-                Title = model.Title,
-                CurrentAdminUserId = model.AdminUserId,
-                AdminUsers = assignedAdminUser,
-                StudentGroupName = studentGroup.GroupName
-            };
-
-            flashMessage.Danger("入力に誤りがあります。");
-            return View("AssignTicket", viewModel);
-        }
-
-        await ticketService.AssignTicketAsync(new AssignTicketReqDto
-        {
-            TicketId = ticketId,
-            AdminUserId = model.AdminUserId
-        }, cancellationToken);
-        
-        flashMessage.Info("チケットの担当者を変更しました。");
-        return RedirectToAction("Detail", new { id = studentGroupId });
-    }
+    // [HttpGet("{studentGroupId:long}/tickets/{ticketId:long}/assign")]
+    // public async Task<IActionResult> AssignTicket(long studentGroupId, long ticketId, CancellationToken cancellationToken)
+    // {
+    //     var ticket = await ticketService.GetTicketByIdAsync(ticketId, cancellationToken);
+    //
+    //     if (ticket == null || ticket.StudentGroupId != studentGroupId)
+    //     {
+    //         flashMessage.Danger("チケットが見つかりません。");
+    //         return RedirectToAction("Detail", new { id = studentGroupId });
+    //     }
+    //
+    //     var adminUsers = await adminUserService.GetAllAdminUsersAsync(cancellationToken);
+    //     var assignedAdminUser = adminUsers.Select(au => new AdminUserViewModel
+    //     {
+    //         Id = au.Id,
+    //         FullName = au.FullName,
+    //         TutorType = Enum.Parse<TutorTypes>(au.TutorType.ToString()),
+    //         CreatedAt = au.CreatedAt,
+    //         UpdatedAt = au.UpdatedAt
+    //     }).ToImmutableList();
+    //
+    //     return View("AssignTicket", new AssignTicketViewModel
+    //     {
+    //         TicketId = ticket.Id,
+    //         StudentGroupId = ticket.StudentGroupId,
+    //         Title = ticket.Title,
+    //         CurrentAdminUserId = ticket.TicketAdminUser?.AdminUserId,
+    //         AdminUsers = assignedAdminUser,
+    //         StudentGroupName = ticket.StudentGroup.GroupName,
+    //     });
+    // }
+    //
+    // [HttpPost("{studentGroupId:long}/tickets/{ticketId:long}/assign")]
+    // public async Task<IActionResult> AssignTicket(
+    //     long studentGroupId,
+    //     long ticketId,
+    //     [FromForm] AssignTicketViewModel model,
+    //     CancellationToken cancellationToken
+    // )
+    // {
+    //     var studentGroup = await studentGroupService.GetStudentGroupByIdAsync(studentGroupId, cancellationToken);
+    //     var ticket = await ticketService.GetTicketByIdAsync(ticketId, cancellationToken);
+    //     if (studentGroup == null || ticket == null || ticket.StudentGroupId != studentGroupId)
+    //     {
+    //         flashMessage.Danger("チケットが見つかりません。");
+    //         return RedirectToAction("Detail", new { id = studentGroupId });
+    //     }
+    //     
+    //     var adminUsers = await adminUserService.GetAllAdminUsersAsync(cancellationToken);
+    //     var assignedAdminUser = adminUsers.Select(au => new AdminUserViewModel
+    //     {
+    //         Id = au.Id,
+    //         FullName = au.FullName,
+    //         TutorType = Enum.Parse<TutorTypes>(au.TutorType.ToString()),
+    //         CreatedAt = au.CreatedAt,
+    //         UpdatedAt = au.UpdatedAt
+    //     }).ToImmutableList();
+    //     
+    //     if (!ModelState.IsValid)
+    //     {
+    //         var viewModel = new AssignTicketViewModel
+    //         {
+    //             TicketId = model.TicketId,
+    //             StudentGroupId = model.StudentGroupId,
+    //             Title = model.Title,
+    //             CurrentAdminUserId = model.AdminUserId,
+    //             AdminUsers = assignedAdminUser,
+    //             StudentGroupName = studentGroup.GroupName
+    //         };
+    //
+    //         flashMessage.Danger("入力に誤りがあります。");
+    //         return View("AssignTicket", viewModel);
+    //     }
+    //
+    //     await ticketService.AssignTicketAsync(new AssignTicketReqDto
+    //     {
+    //         TicketId = ticketId,
+    //         AdminUserId = model.AdminUserId
+    //     }, cancellationToken);
+    //     
+    //     flashMessage.Info("チケットの担当者を変更しました。");
+    //     return RedirectToAction("Detail", new { id = studentGroupId });
+    // }
 
     private static string GetAssignmentProgressText(AssignmentProgress status)
     {
