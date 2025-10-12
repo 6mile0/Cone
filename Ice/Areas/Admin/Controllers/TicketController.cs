@@ -1,5 +1,6 @@
 ﻿using Ice.Areas.Admin.Dtos.Req;
 using Ice.Areas.Admin.ViewModels.AdminUser;
+using Ice.Areas.Admin.ViewModels.StudentGroup;
 using Ice.Areas.Admin.ViewModels.Ticket;
 using Ice.Enums;
 using Ice.Exception;
@@ -29,6 +30,14 @@ public class TicketController(ITicketService ticketService, IAdminUserService ad
             Title = t.Title,
             Status = t.Status,
             AssignedTo = t.TicketAdminUser?.AdminUser,
+            StudentGroup = new StudentGroupViewModel
+            {
+                Id = t.StudentGroup.Id, 
+                GroupName = t.StudentGroup.GroupName,
+                CreatedAt = t.StudentGroup.CreatedAt,
+                UpdatedAt = t.StudentGroup.UpdatedAt,
+                TicketCount = t.StudentGroup.Tickets?.Count ?? 0
+            },
             CreatedAt = t.CreatedAt,
             UpdatedAt = t.UpdatedAt
         }).ToList();
@@ -60,15 +69,25 @@ public class TicketController(ITicketService ticketService, IAdminUserService ad
             flashMessage.Danger("指定されたチケットは存在しません。");
             return RedirectToAction("Index", "Ticket", new { area = "admin" });
         }
-        
+
         var assignedTo = ticket.TicketAdminUser != null ? new AdminUserViewModel
         {
-            Id = ticket.TicketAdminUser.Id,
+            Id = ticket.TicketAdminUser.AdminUser.Id,
             FullName = ticket.TicketAdminUser.AdminUser.FullName,
             TutorType = Enum.Parse<TutorTypes>(ticket.TicketAdminUser.AdminUser.TutorType.ToString()),
-            CreatedAt = ticket.TicketAdminUser.CreatedAt,
-            UpdatedAt = ticket.TicketAdminUser.UpdatedAt
+            CreatedAt = ticket.TicketAdminUser.AdminUser.CreatedAt,
+            UpdatedAt = ticket.TicketAdminUser.AdminUser.UpdatedAt
         } : null;
+
+        var adminUsers = await adminUserService.GetAllAdminUsersAsync(cancellationToken);
+        var adminUsersViewModels = adminUsers.Select(a => new AdminUserViewModel
+        {
+            Id = a.Id,
+            FullName = a.FullName,
+            TutorType = a.TutorType,
+            CreatedAt = a.CreatedAt,
+            UpdatedAt = a.UpdatedAt
+        }).ToList();
 
         var viewModel = new TicketDetailViewModel
         {
@@ -79,6 +98,7 @@ public class TicketController(ITicketService ticketService, IAdminUserService ad
             StudentGroupId = ticket.StudentGroupId,
             StudentGroupName = ticket.StudentGroup.GroupName,
             AssignedTo = assignedTo,
+            AdminUsers = adminUsersViewModels,
             CreatedAt = ticket.CreatedAt,
             UpdatedAt = ticket.UpdatedAt
         };
@@ -149,6 +169,32 @@ public class TicketController(ITicketService ticketService, IAdminUserService ad
         {
             flashMessage.Danger("指定されたチケットは存在しません。");
             return View("Edit", model);
+        }
+
+        return RedirectToAction("Detail", new { id });
+    }
+
+    [Route("{id:long}/assign")]
+    [HttpPost]
+    public async Task<IActionResult> AssignAdminUser(
+        long id,
+        [FromForm] long adminUserId,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            await ticketService.AssignTicketAsync(new AssignTicketReqDto
+            {
+                TicketId = id,
+                AdminUserId = adminUserId
+            }, cancellationToken);
+
+            flashMessage.Info("担当者を変更しました。");
+        }
+        catch (EntityNotFoundException e)
+        {
+            flashMessage.Danger(e.Message);
         }
 
         return RedirectToAction("Detail", new { id });

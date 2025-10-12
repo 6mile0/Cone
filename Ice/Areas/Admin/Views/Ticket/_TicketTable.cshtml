@@ -14,6 +14,7 @@ else
                 <tr>
                     <th>タイトル</th>
                     <th>ステータス</th>
+                    <th>学生グループ</th>
                     <th>担当者</th>
                     <th>作成日</th>
                     <th>更新日</th>
@@ -38,12 +39,17 @@ else
                                     <span class="badge bg-success">解決済み</span>
                                     break;
                                 case TicketStatus.Pending:
-                                    <span class="badge bg-danger text-dark">トラブルなどで保留中</span>
+                                    <span class="badge bg-danger">トラブルなどで保留中</span>
                                     break;
                                 default:
                                     <span class="badge bg-secondary">不明</span>
                                     break;
                             }
+                        </td>
+                        <td>
+                            <a asp-controller="StudentGroup" asp-action="Detail" asp-route-id="@ticket.StudentGroup.Id" class="text-decoration-none">
+                                @ticket.StudentGroup.GroupName
+                            </a>
                         </td>
                         <td>@(ticket.AssignedTo?.FullName ?? "未割当")</td>
                         <td>@ticket.CreatedAt.ToJst().ToString("yyyy/MM/dd HH:mm")</td>

@@ -1,4 +1,5 @@
-﻿using Ice.Db.Models;
+﻿using Ice.Areas.Admin.ViewModels.StudentGroup;
+using Ice.Db.Models;
 using Ice.Enums;
 
 namespace Ice.Areas.Admin.ViewModels.Ticket;
@@ -12,6 +13,8 @@ public class TicketViewModel
     public required TicketStatus Status { get; init; }
     
     public required AdminUsers? AssignedTo { get; init; }
+    
+    public required StudentGroupViewModel StudentGroup { get; init; }
 
     public required DateTimeOffset CreatedAt { get; init; }
     
