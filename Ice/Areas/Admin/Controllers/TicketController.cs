@@ -63,11 +63,11 @@ public class TicketController(ITicketService ticketService, IAdminUserService ad
 
         var assignedTo = ticket.TicketAdminUser != null ? new AdminUserViewModel
         {
-            Id = ticket.TicketAdminUser.Id,
+            Id = ticket.TicketAdminUser.AdminUser.Id,
             FullName = ticket.TicketAdminUser.AdminUser.FullName,
             TutorType = Enum.Parse<TutorTypes>(ticket.TicketAdminUser.AdminUser.TutorType.ToString()),
-            CreatedAt = ticket.TicketAdminUser.CreatedAt,
-            UpdatedAt = ticket.TicketAdminUser.UpdatedAt
+            CreatedAt = ticket.TicketAdminUser.AdminUser.CreatedAt,
+            UpdatedAt = ticket.TicketAdminUser.AdminUser.UpdatedAt
         } : null;
 
         var adminUsers = await adminUserService.GetAllAdminUsersAsync(cancellationToken);

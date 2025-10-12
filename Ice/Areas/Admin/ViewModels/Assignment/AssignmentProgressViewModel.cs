@@ -8,7 +8,5 @@ public class AssignmentProgressViewModel
 
     public required string AssignmentName { get; init; }
 
-    public required string Status { get; init; }
-
-    public required AssignmentProgress StatusEnum { get; init; }
+    public required AssignmentProgress Status { get; init; }
 }

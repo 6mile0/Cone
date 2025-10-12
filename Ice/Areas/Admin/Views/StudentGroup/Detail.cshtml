@@ -41,17 +41,17 @@
                                 <td>
                                     @switch (assignment.Status)
                                     {
-                                        case "未着手":
-                                            <span class="badge bg-secondary">@assignment.Status</span>
+                                        case AssignmentProgress.NotStarted:
+                                            <span class="badge bg-secondary">未着手</span>
                                             break;
-                                        case "進行中":
-                                            <span class="badge bg-primary">@assignment.Status</span>
+                                        case AssignmentProgress.InProgress:
+                                            <span class="badge bg-primary">進行中</span>
                                             break;
-                                        case "完了":
-                                            <span class="badge bg-success">@assignment.Status</span>
+                                        case AssignmentProgress.Completed:
+                                            <span class="badge bg-success">完了</span>
                                             break;
                                         default:
-                                            <span class="badge bg-warning">@assignment.Status</span>
+                                            <span class="badge bg-warning">不明</span>
                                             break;
                                     }
                                 </td>
@@ -59,18 +59,9 @@
                                     <form asp-action="UpdateAssignmentStatus" asp-route-studentGroupId="@Model.Id" asp-route-assignmentId="@assignment.AssignmentId" method="post" class="d-inline">
                                         <select name="status" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
                                             <option value="">ステータスを選択してください</option>
-                                            @if (assignment.StatusEnum != AssignmentProgress.NotStarted)
-                                            {
-                                                <option value="NotStarted">未着手</option>
-                                            }
-                                            @if (assignment.StatusEnum != AssignmentProgress.InProgress)
-                                            {
-                                                <option value="InProgress">進行中</option>
-                                            }
-                                            @if (assignment.StatusEnum != AssignmentProgress.Completed)
-                                            {
-                                                <option value="Completed">完了</option>
-                                            }
+                                            <option value="NotStarted" selected="@(assignment.Status == AssignmentProgress.NotStarted)">未着手</option>
+                                            <option value="InProgress" selected="@(assignment.Status == AssignmentProgress.InProgress)">進行中</option>
+                                            <option value="Completed" selected="@(assignment.Status == AssignmentProgress.Completed)">完了</option>
                                         </select>
                                     </form>
                                 </td>
