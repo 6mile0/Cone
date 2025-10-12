@@ -3,6 +3,7 @@ using Ice.Areas.Admin.ViewModels.AdminUser;
 using Ice.Areas.Admin.ViewModels.Ticket;
 using Ice.Enums;
 using Ice.Exception;
+using Ice.Services.AdminUserService;
 using Ice.Services.TicketService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,15 +14,16 @@ namespace Ice.Areas.Admin.Controllers;
 [Authorize(Policy = "Admin")]
 [Area("admin")]
 [Route("[area]/tickets")]
-public class TicketController(ITicketService ticketService, IFlashMessage flashMessage) : Controller
+public class TicketController(ITicketService ticketService, IAdminUserService adminUserService, IFlashMessage flashMessage) : Controller
 {
     [Route("")]
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
         var tickets = await ticketService.GetAllTicketsAsync(cancellationToken);
+        var adminUsers = await adminUserService.GetAllAdminUsersAsync(cancellationToken);
 
-        var viewModels = tickets.Select(t => new TicketViewModel
+        var ticketViewModels = tickets.Select(t => new TicketViewModel
         {
             Id = t.Id,
             Title = t.Title,
@@ -31,7 +33,20 @@ public class TicketController(ITicketService ticketService, IFlashMessage flashM
             UpdatedAt = t.UpdatedAt
         }).ToList();
 
-        return View("Index", viewModels);
+        var adminUsersViewModels = adminUsers.Select(a => new AdminUserViewModel
+        {
+            Id = a.Id,
+            FullName = a.FullName,
+            TutorType = a.TutorType,
+            CreatedAt = a.CreatedAt,
+            UpdatedAt = a.UpdatedAt
+        }).ToList();
+
+        return View("Index", new TicketViewModelList
+        {
+            Tickets = ticketViewModels,
+            AdminUsers = adminUsersViewModels
+        });
     }
 
     [Route("{id:long}")]
