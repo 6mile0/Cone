@@ -102,6 +102,14 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
                 Title = t.Title,
                 Status = t.Status,
                 CreatedAt = t.CreatedAt,
+                StudentGroup = new StudentGroupViewModel
+                {
+                    Id = group.Id,
+                    GroupName = group.GroupName,
+                    CreatedAt = group.CreatedAt,
+                    UpdatedAt = group.UpdatedAt,
+                    TicketCount = group.Tickets?.Count ?? 0
+                },
                 AssignedTo = t.TicketAdminUser?.AdminUser,
                 UpdatedAt = t.UpdatedAt
             }).ToImmutableList()

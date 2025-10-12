@@ -1,5 +1,6 @@
 ﻿using Ice.Areas.Admin.Dtos.Req;
 using Ice.Areas.Admin.ViewModels.AdminUser;
+using Ice.Areas.Admin.ViewModels.StudentGroup;
 using Ice.Areas.Admin.ViewModels.Ticket;
 using Ice.Enums;
 using Ice.Exception;
@@ -29,6 +30,14 @@ public class TicketController(ITicketService ticketService, IAdminUserService ad
             Title = t.Title,
             Status = t.Status,
             AssignedTo = t.TicketAdminUser?.AdminUser,
+            StudentGroup = new StudentGroupViewModel
+            {
+                Id = t.StudentGroup.Id, 
+                GroupName = t.StudentGroup.GroupName,
+                CreatedAt = t.StudentGroup.CreatedAt,
+                UpdatedAt = t.StudentGroup.UpdatedAt,
+                TicketCount = t.StudentGroup.Tickets?.Count ?? 0
+            },
             CreatedAt = t.CreatedAt,
             UpdatedAt = t.UpdatedAt
         }).ToList();
