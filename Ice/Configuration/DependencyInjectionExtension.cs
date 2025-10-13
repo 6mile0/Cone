@@ -1,4 +1,5 @@
 ﻿using Ice.Db.Models;
+using Ice.Services;
 using Ice.Services.AdminUserService;
 using Ice.Services.AssignmentService;
 using Ice.Services.AssignmentStudentGroupService;
@@ -26,7 +27,10 @@ public static class DependencyInjectionExtension
         // Server-Sent Events
         services.AddServerSentEvents();
         services.AddSingleton<INotificationService, NotificationService>();
-        
+
+        // Background Services
+        services.AddHostedService<StaffStatusBroadcastService>();
+
         // Custom Admin AdminRequirement
         services.AddScoped<IAuthorizationHandler, CustomAdminHandler>();
 
