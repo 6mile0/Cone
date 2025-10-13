@@ -97,6 +97,7 @@
             if (savedFilter) {
                 assigneeFilter.value = savedFilter;
                 filterTickets(savedFilter);
+                updateBadgeCounts();
             }
 
             // フィルタ変更時の処理
@@ -111,7 +112,7 @@
                 ticketTables.forEach(function(tbody) {
                     const rows = tbody.querySelectorAll('tr');
                     rows.forEach(function(row) {
-                        const assigneeCell = row.querySelector('td:nth-child(3)');
+                        const assigneeCell = row.querySelector('td:nth-child(4)');
                         if (!assigneeCell) return;
 
                         const assigneeText = assigneeCell.textContent.trim();
