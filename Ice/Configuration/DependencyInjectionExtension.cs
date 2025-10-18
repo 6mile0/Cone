@@ -1,5 +1,5 @@
-﻿using Ice.Db.Models;
-using Ice.Services;
+﻿using Ice.Db;
+using Ice.Db.Models;
 using Ice.Services.AdminUserService;
 using Ice.Services.AssignmentService;
 using Ice.Services.AssignmentStudentGroupService;
@@ -8,6 +8,7 @@ using Ice.Services.StudentGroupService;
 using Ice.Services.TicketService;
 using Lib.AspNetCore.ServerSentEvents;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Vereyon.Web;
 
 namespace Ice.Configuration;
@@ -45,6 +46,11 @@ public static class DependencyInjectionExtension
             EmergencyAdminEmails = emergencyAdminEmails,
             AllowedEmailEndPrefixes = allowedEmailEndPrefixes
         });
+        
+        // Add Data Protection
+        services.AddDataProtection()
+            .PersistKeysToDbContext<IceDbContext>()
+            .SetApplicationName("IceApp");
         
         return services;
     }
