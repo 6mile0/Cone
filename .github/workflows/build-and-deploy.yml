@@ -27,22 +27,30 @@ jobs:
       - name: Save image as tar
         run: |
           docker save cone-tut:latest -o app.tar
-
-      - name: Upload to deploy server via mTLS
+      
+      - name: Create GitHub Release & Upload tar
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          files: app.tar
         env:
-          DEPLOY_URL: https://manage-cone-tut.6mile.dev/deploy
-          CLIENT_CERT: ${{ secrets.CLIENT_CERT }}
-          CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
-        run: |
-          echo "$CLIENT_CERT" > client.pem
-          echo "$CLIENT_KEY" > private.pem
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          curl --fail \
-            --cert client.pem \
-            --key private.pem \
-            -F "tar_file=@app.tar" \
-            -F "compose_file=@compose.prod.yaml" \
-            "$DEPLOY_URL"
+#      - name: Upload to deploy server via mTLS
+#        env:
+#          DEPLOY_URL: https://manage-cone-tut.6mile.dev/deploy
+#          CLIENT_CERT: ${{ secrets.CLIENT_CERT }}
+#          CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
+#        run: |
+#          echo "$CLIENT_CERT" > client.pem
+#          echo "$CLIENT_KEY" > private.pem
+#
+#          curl --fail \
+#            --cert client.pem \
+#            --key private.pem \
+#            -F "tar_file=@app.tar" \
+#            -F "compose_file=@compose.prod.yaml" \
+#            "$DEPLOY_URL"
 
       - name: Cleanup
         if: always()
