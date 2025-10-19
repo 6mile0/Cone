@@ -7,6 +7,21 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "Python3 is not installed. Please install Python 3 and try again."
+    exit 1
+fi
+
+# python3-venv チェック
+PYTHON_VENV_CHECK=$(python3 -m venv /tmp/test_venv 2>&1 || true)
+if [ -d "/tmp/test_venv" ]; then rm -rf /tmp/test_venv; fi
+if echo "$PYTHON_VENV_CHECK" | grep -q "ensurepip"; then
+    echo "python3-venv is installed."
+    apt update
+    apt install -y python3-venv
+fi
+
+
 # Define variables
 APP_DIR="/opt/app"
 APP_FILE="main.py"
