@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+permissions: 
+    contents: read
+    packages: write
 
 jobs:
   deploy:
@@ -34,9 +37,9 @@ jobs:
           tag_name: latest
           files: app.tar
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#      - name: Upload to deploy server via mTLS
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+      
+      #      - name: Upload to deploy server via mTLS
 #        env:
 #          DEPLOY_URL: https://manage-cone-tut.6mile.dev/deploy
 #          CLIENT_CERT: ${{ secrets.CLIENT_CERT }}
