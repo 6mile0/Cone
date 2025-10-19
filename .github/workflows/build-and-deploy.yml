@@ -51,7 +51,6 @@ jobs:
 #          curl --fail \
 #            --cert client.pem \
 #            --key private.pem \
-#            -F "tar_file=@app.tar" \
 #            -F "compose_file=@compose.prod.yaml" \
 #            "$DEPLOY_URL"
 
