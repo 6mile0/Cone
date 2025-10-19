@@ -43,7 +43,7 @@ cd $APP_DIR
 python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
-pip 
+pip install -r app/requirements.txt
 
 # Create systemd service file
 echo "Creating systemd service..."
