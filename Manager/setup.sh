@@ -1,40 +1,29 @@
 ﻿#!/bin/bash
 set -e
 
-# =========================================
-# sudo/root チェック
-# =========================================
+# Check for root privileges
 if [ "$EUID" -ne 0 ]; then
   echo "Please run as root or use sudo."
   exit 1
 fi
 
-
-# =========================================
-# 変数設定
-# =========================================
+# Define variables
 APP_DIR="/opt/app"
-APP_FILE="deploy_service.py"
+APP_FILE="main.py"
 SERVICE_NAME="deploy_service"
 USER_NAME=$(whoami)  # systemdで使用するユーザー
 SERVICE_PORT=9000
 
-# =========================================
-# ディレクトリ作成
-# =========================================
+# Create application directory
 echo "Creating application directory..."
 sudo mkdir -p $APP_DIR
 sudo chown $USER_NAME:$USER_NAME $APP_DIR
 
-# =========================================
-# アプリコードをコピー（ここでは同ディレクトリのdeploy_service.pyを想定）
-# =========================================
+# Copy application code
 echo "Copying application code..."
 cp $APP_FILE $APP_DIR/$APP_FILE
 
-# =========================================
-# 仮想環境作成 & 依存インストール
-# =========================================
+# Set up Python virtual environment and install dependencies
 echo "Setting up Python virtual environment..."
 cd $APP_DIR
 python3 -m venv venv
@@ -42,9 +31,7 @@ source venv/bin/activate
 pip install --upgrade pip
 pip install fastapi uvicorn[standard]
 
-# =========================================
-# systemd サービスファイル作成
-# =========================================
+# Create systemd service file
 echo "Creating systemd service..."
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 
@@ -65,9 +52,7 @@ RestartSec=5s
 WantedBy=multi-user.target
 EOF
 
-# =========================================
-# systemd反映 & 起動
-# =========================================
+# Reload systemd, enable and start the service
 echo "Reloading systemd, enabling and starting service..."
 sudo systemctl daemon-reload
 sudo systemctl enable $SERVICE_NAME.service
