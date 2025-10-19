@@ -16,7 +16,7 @@ fi
 PYTHON_VENV_CHECK=$(python3 -m venv /tmp/test_venv 2>&1 || true)
 if [ -d "/tmp/test_venv" ]; then rm -rf /tmp/test_venv; fi
 if echo "$PYTHON_VENV_CHECK" | grep -q "ensurepip"; then
-    echo "python3-venv is installed."
+    echo "python3-venv is not installed. Installing..."
     apt update
     apt install -y python3-venv
 fi
@@ -24,7 +24,6 @@ fi
 
 # Define variables
 APP_DIR="/opt/app"
-APP_FILE="main.py"
 SERVICE_NAME="deploy_service"
 USER_NAME=$(whoami)  # systemdで使用するユーザー
 SERVICE_PORT=9000
@@ -36,7 +35,7 @@ sudo chown $USER_NAME:$USER_NAME $APP_DIR
 
 # Copy application code
 echo "Copying application code..."
-cp $APP_FILE $APP_DIR/$APP_FILE
+cp -r app $APP_DIR/
 
 # Set up Python virtual environment and install dependencies
 echo "Setting up Python virtual environment..."
@@ -44,7 +43,7 @@ cd $APP_DIR
 python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
-pip install fastapi uvicorn[standard]
+pip 
 
 # Create systemd service file
 echo "Creating systemd service..."
