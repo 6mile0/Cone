@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Ice.Services.TicketService;
 
-public class TicketService(IceDbContext iceDbContext, INotificationService notificationService): ITicketService
+public class TicketService(IceDbContext iceDbContext, INotificationService notificationService) : ITicketService
 {
     public async Task<IReadOnlyList<Tickets>> GetAllTicketsAsync(CancellationToken cancellationToken)
     {
@@ -31,7 +31,8 @@ public class TicketService(IceDbContext iceDbContext, INotificationService notif
             .FirstOrDefaultAsync(t => t.Id == ticketId, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Tickets>> GetTicketsByStudentGroupIdAsync(long studentGroupId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Tickets>> GetTicketsByStudentGroupIdAsync(long studentGroupId,
+        CancellationToken cancellationToken)
     {
         return await iceDbContext.Tickets
             .Where(t => t.StudentGroupId == studentGroupId)
@@ -40,7 +41,7 @@ public class TicketService(IceDbContext iceDbContext, INotificationService notif
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync(cancellationToken);
     }
-    
+
     public async Task<AddTicketResDto> CreateTicketAsync(AddTicketDto addTicketDto, CancellationToken cancellationToken)
     {
         var transaction = await iceDbContext.Database.BeginTransactionAsync(cancellationToken);
@@ -66,15 +67,16 @@ public class TicketService(IceDbContext iceDbContext, INotificationService notif
 
         iceDbContext.Tickets.Add(ticket);
         await iceDbContext.SaveChangesAsync(cancellationToken);
-        
+
         // 講師を割り当てる
         var targetTutor = await AssignTutorToTicketAsync(ticket.Id, cancellationToken);
-        
+
         // 課題とチケットの関連付け
-        await LinkAssignmentToTicketAsync(ticket.Id, addTicketDto.AssignmentId, addTicketDto.StudentGroupId, cancellationToken);
+        await LinkAssignmentToTicketAsync(ticket.Id, addTicketDto.AssignmentId, addTicketDto.StudentGroupId,
+            cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
-        
+
         // SSE通知を送信
         await notificationService.NotifyTicketCreatedAsync(
             ticket.Id,
@@ -131,7 +133,8 @@ public class TicketService(IceDbContext iceDbContext, INotificationService notif
         return await iceDbContext.Tickets
             .Include(t => t.TicketAdminUser)
             .ThenInclude(tau => tau!.AdminUser)
-            .FirstOrDefaultAsync(t => t.StudentGroupId == studentGroupId && t.Status == TicketStatus.InProgress, cancellationToken);
+            .FirstOrDefaultAsync(t => t.StudentGroupId == studentGroupId && t.Status == TicketStatus.InProgress,
+                cancellationToken);
     }
 
     public async Task<Tickets> AssignTicketAsync(AssignTicketReqDto req, CancellationToken cancellationToken)
@@ -182,32 +185,60 @@ public class TicketService(IceDbContext iceDbContext, INotificationService notif
 
     private async Task<AdminUsers> AssignTutorToTicketAsync(long ticketId, CancellationToken cancellationToken)
     {
-        // 講師ごとの担当チケット数を一度のクエリで取得
-        var tutorTicketCounts = await iceDbContext.AdminUsers
-            .GroupJoin(
-                iceDbContext.TicketAdminUsers,
-                admin => admin.Id,
-                tau => tau.AdminUserId,
-                (admin, tickets) => new
-                {
-                    TutorId = admin.Id,
-                    TicketCount = tickets.Count()
-                })
+        // 対応中のチケットとその担当講師を取得
+        var inProgressTickets = await iceDbContext.Tickets
+            .Where(t => t.Status == TicketStatus.InProgress)
+            .Include(t => t.TicketAdminUser)
             .ToListAsync(cancellationToken);
 
-        if (tutorTicketCounts.Count == 0)
+        // 講師ごとの対応中チケット数をカウント
+        var inProgressTicketsByTutor = inProgressTickets
+            .Where(t => t.TicketAdminUser != null)
+            .GroupBy(t => t.TicketAdminUser!.AdminUserId)
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        // すべての講師を取得
+        var allTutors = await iceDbContext.AdminUsers.ToListAsync(cancellationToken);
+
+        if (allTutors.Count == 0)
         {
             throw new InvalidOperationException("講師が登録されていません。");
         }
 
-        // 最も少ないチケット数の講師を取得
-        var minTicketCount = tutorTicketCounts.Min(t => t.TicketCount);
-        var leastBusyTutorId = tutorTicketCounts
-            .First(t => t.TicketCount == minTicketCount)
-            .TutorId;
+        // 対応中のチケットを持たない講師を検索
+        var availableTutors = allTutors
+            .Where(tutor => !inProgressTicketsByTutor.ContainsKey(tutor.Id))
+            .ToList();
 
-        var targetUser =  await iceDbContext.AdminUsers
-            .FirstAsync(u => u.Id == leastBusyTutorId, cancellationToken);
+        // 全員が対応中の場合はエラー
+        if (availableTutors.Count == 0)
+        {
+            throw new AllStaffCurrentlyAssistingException("TA/SAの全員が対応中です。しばらく経ってから再度チケットを作成してください。");
+        }
+
+        // 対応できる講師の中で最も総チケット数が少ない講師を選択
+        AdminUsers targetUser;
+        if (availableTutors.Count == allTutors.Count)
+        {
+            // 全員が対応中でない場合、総チケット数が最も少ない講師を選択
+            var ticketCounts = await iceDbContext.TicketAdminUsers
+                .GroupBy(tau => tau.AdminUserId)
+                .Select(g => new { AdminUserId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.AdminUserId, x => x.Count, cancellationToken
+                );
+            var minTicketCount = ticketCounts.Values.Min();
+            var candidates = availableTutors
+                .Where(tutor => ticketCounts.GetValueOrDefault(tutor.Id, 0) == minTicketCount)
+                .ToList();
+            targetUser = candidates.First();
+        }
+        else
+        {
+            // 対応中でない講師の中からランダムに選択
+            var random = new Random();
+            var randomIndex = random.Next(availableTutors.Count);
+            targetUser = availableTutors[randomIndex];
+        }
         
         var adminUserTicket = new TicketAdminUsers
         {
@@ -216,23 +247,24 @@ public class TicketService(IceDbContext iceDbContext, INotificationService notif
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
-        
+
         iceDbContext.TicketAdminUsers.Add(adminUserTicket);
         await iceDbContext.SaveChangesAsync(cancellationToken);
-        
+
         return targetUser;
     }
-    
-    private async Task LinkAssignmentToTicketAsync(long ticketId, long assignmentId, long studentGroupId, CancellationToken cancellationToken)
+
+    private async Task LinkAssignmentToTicketAsync(long ticketId, long assignmentId, long studentGroupId,
+        CancellationToken cancellationToken)
     {
         var assignmentExists = await iceDbContext.Assignments
             .AnyAsync(a => a.Id == assignmentId, cancellationToken);
-        
+
         if (!assignmentExists)
         {
             throw new EntityNotFoundException($"課題ID {assignmentId} の課題が見つかりません。");
-        }   
-        
+        }
+
         var ticketAssignment = new TicketAssignments
         {
             TicketId = ticketId,
@@ -241,7 +273,7 @@ public class TicketService(IceDbContext iceDbContext, INotificationService notif
             UpdatedAt = DateTime.UtcNow,
             StudentGroupId = studentGroupId
         };
-        
+
         iceDbContext.TicketAssignments.Add(ticketAssignment);
         await iceDbContext.SaveChangesAsync(cancellationToken);
     }

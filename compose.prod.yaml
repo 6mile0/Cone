@@ -19,5 +19,6 @@
       - POSTGRES_DB=ice
       - POSTGRES_USER=ice
       - POSTGRES_PASSWORD=icepassword
+    restart: always
 volumes:
   ice_db:
