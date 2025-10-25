@@ -43,22 +43,22 @@ jobs:
         run: |
           base64 -w 0 compose.prod.yaml > compose.prod.b64.txt
 
-      - name: Deploy to TUT Server
-        env:
-          DEPLOY_URL: https://manage-cone-tut.6mile.dev/deploy
-          CLIENT_CERT: ${{ secrets.CLIENT_CERT }}
-          CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
-        run: |
-          echo "$CLIENT_CERT" > client.pem
-          echo "$CLIENT_KEY" > private.pem
-          
-          COMPOSE_B64=$(cat compose.prod.b64.txt)
-          curl --fail \
-            --cert client.pem \
-            --key private.pem \
-            -H "Content-Type: application/json" \
-            -d "{\"content_base64\":\"$COMPOSE_B64\"}" \
-            "$DEPLOY_URL"
+#      - name: Deploy to TUT Server
+#        env:
+#          DEPLOY_URL: https://manage-cone-tut.6mile.dev/deploy
+#          CLIENT_CERT: ${{ secrets.CLIENT_CERT }}
+#          CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
+#        run: |
+#          echo "$CLIENT_CERT" > client.pem
+#          echo "$CLIENT_KEY" > private.pem
+#          
+#          COMPOSE_B64=$(cat compose.prod.b64.txt)
+#          curl --fail \
+#            --cert client.pem \
+#            --key private.pem \
+#            -H "Content-Type: application/json" \
+#            -d "{\"content_base64\":\"$COMPOSE_B64\"}" \
+#            "$DEPLOY_URL"
 
       - name: Cleanup
         if: always()
