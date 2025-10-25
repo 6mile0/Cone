@@ -1,65 +1,65 @@
-﻿name: Deploy cone-tut via Cloudflare Tunnel
-
-on:
-  push:
-    branches:
-      - main
-permissions: 
-    contents: read
-    packages: write
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Generate appsettings.Production.json from secret
-        run: |
-          echo "${{ secrets.APPSETTINGS_PRODUCTION_JSON_B64 }}" | base64 -d > Ice/appsettings.json
-
-      - name: Build Docker image
-        run: |
-          docker build -t cone-tut:latest -f Ice/Dockerfile .
-
-      - name: Save image as tar
-        run: |
-          docker save cone-tut:latest -o app.tar
-      
-      - name: Create GitHub Release & Upload tar
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: latest
-          files: app.tar
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-
-      - name: Convert compose file to base64
-        run: |
-          base64 -w 0 compose.prod.yaml > compose.prod.b64.txt
-
-      - name: Deploy to TUT Server
-        env:
-          DEPLOY_URL: https://manage-cone-tut.6mile.dev/deploy
-          CLIENT_CERT: ${{ secrets.CLIENT_CERT }}
-          CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
-        run: |
-          echo "$CLIENT_CERT" > client.pem
-          echo "$CLIENT_KEY" > private.pem
-          
-          COMPOSE_B64=$(cat compose.prod.b64.txt)
-          curl --fail \
-            --cert client.pem \
-            --key private.pem \
-            -H "Content-Type: application/json" \
-            -d "{\"content_base64\":\"$COMPOSE_B64\"}" \
-            "$DEPLOY_URL"
-
-      - name: Cleanup
-        if: always()
-        run: rm -f client.pem private.key app.tar Ice/appsettings.json
+﻿#name: Deploy cone-tut via Cloudflare Tunnel
+#
+#on:
+#  push:
+#    branches:
+#      - main
+#permissions: 
+#    contents: read
+#    packages: write
+#
+#jobs:
+#  deploy:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v4
+#
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v3
+#
+#      - name: Generate appsettings.Production.json from secret
+#        run: |
+#          echo "${{ secrets.APPSETTINGS_PRODUCTION_JSON_B64 }}" | base64 -d > Ice/appsettings.json
+#
+#      - name: Build Docker image
+#        run: |
+#          docker build -t cone-tut:latest -f Ice/Dockerfile .
+#
+#      - name: Save image as tar
+#        run: |
+#          docker save cone-tut:latest -o app.tar
+#      
+#      - name: Create GitHub Release & Upload tar
+#        uses: softprops/action-gh-release@v2
+#        with:
+#          tag_name: latest
+#          files: app.tar
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+#
+#      - name: Convert compose file to base64
+#        run: |
+#          base64 -w 0 compose.prod.yaml > compose.prod.b64.txt
+#
+#      - name: Deploy to TUT Server
+#        env:
+#          DEPLOY_URL: https://manage-cone-tut.6mile.dev/deploy
+#          CLIENT_CERT: ${{ secrets.CLIENT_CERT }}
+#          CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
+#        run: |
+#          echo "$CLIENT_CERT" > client.pem
+#          echo "$CLIENT_KEY" > private.pem
+#          
+#          COMPOSE_B64=$(cat compose.prod.b64.txt)
+#          curl --fail \
+#            --cert client.pem \
+#            --key private.pem \
+#            -H "Content-Type: application/json" \
+#            -d "{\"content_base64\":\"$COMPOSE_B64\"}" \
+#            "$DEPLOY_URL"
+#
+#      - name: Cleanup
+#        if: always()
+#        run: rm -f client.pem private.key app.tar Ice/appsettings.json
