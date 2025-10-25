@@ -1,5 +1,6 @@
 ﻿using Ice.Areas.Student.Dtos.Req;
 using Ice.Areas.Student.ViewModels;
+using Ice.Exception;
 using Ice.Services.AssignmentService;
 using Ice.Services.StudentGroupService;
 using Ice.Services.TicketService;
@@ -13,7 +14,11 @@ namespace Ice.Areas.Student.Controllers;
 [Authorize(Policy = "AllowedEmailDomain")]
 [Area("student")]
 [Route("tickets/add")]
-public class TicketController(ITicketService ticketService, IAssignmentService assignmentService, IStudentGroupService studentGroupService, IFlashMessage flashMessage) : Controller
+public class TicketController(
+    ITicketService ticketService,
+    IAssignmentService assignmentService,
+    IStudentGroupService studentGroupService,
+    IFlashMessage flashMessage) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> AddTicket(
@@ -35,9 +40,9 @@ public class TicketController(ITicketService ticketService, IAssignmentService a
             flashMessage.Danger("現在対応可能な課題が存在しません。お近くのTA/SAを呼んでください。");
             return RedirectToAction("Index", "Top");
         }
-        
+
         var isAbleAddTicket = await ticketService.IsAbleAddTicketAsync(studentGroup.Id, cancellationToken);
-            
+
         var enumerableAssignments = assignments
             .OrderBy(a => a.SortOrder)
             .Select(a => new SelectListItem
@@ -46,7 +51,7 @@ public class TicketController(ITicketService ticketService, IAssignmentService a
                 Text = a.Name
             })
             .ToList();
-        
+
         return View("Add", new AddTicketViewModel
         {
             StudentGroupId = studentGroup.Id,
@@ -63,34 +68,35 @@ public class TicketController(ITicketService ticketService, IAssignmentService a
     )
     {
         var isAbleAddTicket = await ticketService.IsAbleAddTicketAsync(model.StudentGroupId, cancellationToken);
-        
+
         if (isAbleAddTicket != null)
         {
             flashMessage.Danger("現在対応中のチケットが存在するため、新しいチケットを追加できません。対応が完了するまでお待ちください。");
             return RedirectToAction("AddTicket", new { studentGroupId = model.StudentGroupId });
         }
         
+        var assignments = await assignmentService.GetAllAssignmentsAsync(cancellationToken);
+        var enumerableAssignments = assignments
+            .OrderBy(a => a.SortOrder)
+            .Select(a => new SelectListItem
+            {
+                Value = a.Id.ToString(),
+                Text = a.Name
+            })
+            .ToList();
+
         if (!ModelState.IsValid)
         {
-            var assignments = await assignmentService.GetAllAssignmentsAsync(cancellationToken);
-            var enumerableAssignments = assignments
-                .OrderBy(a => a.SortOrder)
-                .Select(a => new SelectListItem
-                {
-                    Value = a.Id.ToString(),
-                    Text = a.Name
-                })
-                .ToList();
-            
             return View("Add", new AddTicketViewModel
             {
                 StudentGroupId = model.StudentGroupId,
                 AssignmentId = model.AssignmentId,
                 Title = model.Title,
-                Assignments = enumerableAssignments
+                Assignments = enumerableAssignments,
+                IsAbleAddTicket = false
             });
         }
-        
+
         var request = new AddTicketDto
         {
             StudentGroupId = model.StudentGroupId,
@@ -98,7 +104,23 @@ public class TicketController(ITicketService ticketService, IAssignmentService a
             Title = model.Title,
         };
 
-        await ticketService.CreateTicketAsync(request, cancellationToken);
+        try
+        {
+            await ticketService.CreateTicketAsync(request, cancellationToken);
+        }
+        catch (AllStaffCurrentlyAssistingException)
+        {
+            flashMessage.Danger("現在全てのスタッフが対応中のため、新しいチケットを追加できません。しばらくしてから再度お試しください。");
+            return View("Add", new AddTicketViewModel
+            {
+                StudentGroupId = model.StudentGroupId,
+                AssignmentId = model.AssignmentId,
+                Title = model.Title,
+                Assignments = enumerableAssignments,
+                IsAbleAddTicket = false
+            });
+        }
+
         return RedirectToAction("AddTicket", "Ticket", new { studentGroupId = request.StudentGroupId });
     }
 }
