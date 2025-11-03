@@ -1,6 +1,8 @@
 ﻿services:
   app:
-    image: cone-tut:latest
+    build:
+      context: Ice
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
