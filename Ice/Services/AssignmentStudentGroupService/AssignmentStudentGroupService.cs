@@ -39,4 +39,19 @@ public class AssignmentStudentGroupService(IceDbContext iceDbContext): IAssignme
 
         return completedGroups;
     }
+
+    public async Task UpdateBulkStatusAsync(long assignmentId, List<long> studentGroupIds, AssignmentProgress newStatus, CancellationToken cancellationToken)
+    {
+        var progressRecords = await iceDbContext.StudentGroupAssignmentsProgress
+            .Where(p => p.AssignmentId == assignmentId && studentGroupIds.Contains(p.StudentGroupId))
+            .ToListAsync(cancellationToken);
+
+        foreach (var record in progressRecords)
+        {
+            record.Status = newStatus;
+            record.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await iceDbContext.SaveChangesAsync(cancellationToken);
+    }
 }

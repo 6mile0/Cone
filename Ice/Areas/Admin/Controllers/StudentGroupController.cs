@@ -142,4 +142,46 @@ public class StudentGroupController(IStudentGroupService studentGroupService, IA
         flashMessage.Info("課題のステータスを更新しました。");
         return RedirectToAction("Detail", new { id = studentGroupId });
     }
+
+    [HttpPost("{studentGroupId:long}/bulk-update-assignment-status")]
+    public async Task<IActionResult> BulkUpdateAssignmentStatus(
+        long studentGroupId,
+        [FromForm] List<long> assignmentIds,
+        [FromForm] string status,
+        CancellationToken cancellationToken
+    )
+    {
+        if (assignmentIds.Count == 0)
+        {
+            flashMessage.Warning("課題を選択してください。");
+            return RedirectToAction("Detail", new { id = studentGroupId });
+        }
+
+        if (!Enum.TryParse<AssignmentProgress>(status, out var assignmentStatus))
+        {
+            flashMessage.Danger("無効なステータスです。");
+            return RedirectToAction("Detail", new { id = studentGroupId });
+        }
+
+        foreach (var assignmentId in assignmentIds)
+        {
+            await studentGroupService.UpdateAssignmentProgressAsync(new UpdateAssignmentProgressDto
+            {
+                StudentGroupId = studentGroupId,
+                AssignmentId = assignmentId,
+                Status = assignmentStatus
+            }, cancellationToken);
+        }
+
+        var statusText = assignmentStatus switch
+        {
+            AssignmentProgress.NotStarted => "未着手",
+            AssignmentProgress.InProgress => "進行中",
+            AssignmentProgress.Completed => "完了",
+            _ => "不明"
+        };
+
+        flashMessage.Info($"{assignmentIds.Count}件の課題のステータスを「{statusText}」に更新しました。");
+        return RedirectToAction("Detail", new { id = studentGroupId });
+    }
 }

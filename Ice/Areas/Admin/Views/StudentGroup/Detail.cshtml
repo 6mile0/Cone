@@ -22,13 +22,31 @@
         <div class="card-body">
             @if (Model.AssignmentProgress.Any())
             {
+                <div class="mb-3">
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        <button type="button" class="btn btn-sm btn-secondary flex-fill" onclick="bulkUpdateAssignmentStatus('NotStarted')">
+                            <span class="d-none d-md-inline">選択した課題を</span>未着手<span class="d-none d-md-inline">にする</span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-primary flex-fill" onclick="bulkUpdateAssignmentStatus('InProgress')">
+                            <span class="d-none d-md-inline">選択した課題を</span>進行中<span class="d-none d-md-inline">にする</span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-success flex-fill" onclick="bulkUpdateAssignmentStatus('Completed')">
+                            <span class="d-none d-md-inline">選択した課題を</span>完了<span class="d-none d-md-inline">にする</span>
+                        </button>
+                    </div>
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover">
+                    <table class="table table-striped table-hover assignment-table">
                         <thead class="table-dark">
                         <tr>
+                            <th style="width: 60px;">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleAllAssignments(this.checked)">
+                                </label>
+                            </th>
                             <th>課題名</th>
-                            <th>ステータス</th>
-                            <th>操作</th>
+                            <th class="d-none d-md-table-cell">ステータス</th>
+                            <th class="d-none d-md-table-cell">操作</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -36,9 +54,33 @@
                         {
                             <tr>
                                 <td>
-                                    <a asp-controller="Assignment" asp-action="Detail" asp-route-id="@assignment.AssignmentId">@assignment.AssignmentName</a>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" class="assignment-checkbox" value="@assignment.AssignmentId" id="assignment-@assignment.AssignmentId" onchange="updateSelectAllCheckbox()">
+                                    </label>
                                 </td>
                                 <td>
+                                    <div class="d-flex flex-column">
+                                        <a asp-controller="Assignment" asp-action="Detail" asp-route-id="@assignment.AssignmentId">@assignment.AssignmentName</a>
+                                        <div class="d-md-none mt-1">
+                                            @switch (assignment.Status)
+                                            {
+                                                case AssignmentProgress.NotStarted:
+                                                    <span class="badge bg-secondary">未着手</span>
+                                                    break;
+                                                case AssignmentProgress.InProgress:
+                                                    <span class="badge bg-primary">進行中</span>
+                                                    break;
+                                                case AssignmentProgress.Completed:
+                                                    <span class="badge bg-success">完了</span>
+                                                    break;
+                                                default:
+                                                    <span class="badge bg-warning">不明</span>
+                                                    break;
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="d-none d-md-table-cell">
                                     @switch (assignment.Status)
                                     {
                                         case AssignmentProgress.NotStarted:
@@ -55,10 +97,10 @@
                                             break;
                                     }
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     <form asp-action="UpdateAssignmentStatus" asp-route-studentGroupId="@Model.Id" asp-route-assignmentId="@assignment.AssignmentId" method="post" class="d-inline">
                                         <select name="status" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
-                                            <option value="">ステータスを選択してください</option>
+                                            <option value="">ステータスを選択</option>
                                             <option value="NotStarted" selected="@(assignment.Status == AssignmentProgress.NotStarted)">未着手</option>
                                             <option value="InProgress" selected="@(assignment.Status == AssignmentProgress.InProgress)">進行中</option>
                                             <option value="Completed" selected="@(assignment.Status == AssignmentProgress.Completed)">完了</option>
@@ -147,3 +189,144 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* チェックボックスのタップエリアを大きくする */
+    .checkbox-label {
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+        min-width: 44px;
+        min-height: 44px;
+        justify-content: center;
+        margin: 0;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        cursor: pointer;
+        width: 20px;
+        height: 20px;
+    }
+
+    /* モバイルでの最適化 */
+    @@media (max-width: 767.98px) {
+        .assignment-table td {
+            padding: 0.75rem 0.5rem;
+        }
+
+        .assignment-table a {
+            font-size: 0.95rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        /* モバイルではボタンを100%幅にする */
+        .flex-fill {
+            min-width: 0;
+        }
+    }
+
+    /* タッチデバイスでのホバー効果を無効化 */
+    @@media (hover: none) {
+        .table-hover tbody tr:hover {
+            --bs-table-accent-bg: transparent;
+        }
+    }
+</style>
+
+@section Scripts {
+<script>
+    // 全選択
+    function selectAllAssignments() {
+        const checkboxes = document.querySelectorAll('.assignment-checkbox');
+        checkboxes.forEach(cb => cb.checked = true);
+        updateSelectAllCheckbox();
+    }
+
+    // 選択解除
+    function deselectAllAssignments() {
+        const checkboxes = document.querySelectorAll('.assignment-checkbox');
+        checkboxes.forEach(cb => cb.checked = false);
+        updateSelectAllCheckbox();
+    }
+
+    // 全選択チェックボックスの状態を切り替え
+    function toggleAllAssignments(checked) {
+        const checkboxes = document.querySelectorAll('.assignment-checkbox');
+        checkboxes.forEach(cb => cb.checked = checked);
+    }
+
+    // 全選択チェックボックスの状態を更新
+    function updateSelectAllCheckbox() {
+        const checkboxes = document.querySelectorAll('.assignment-checkbox');
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+
+        if (selectAllCheckbox) {
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            const someChecked = Array.from(checkboxes).some(cb => cb.checked);
+
+            selectAllCheckbox.checked = allChecked;
+            selectAllCheckbox.indeterminate = someChecked && !allChecked;
+        }
+    }
+
+    // 一括ステータス更新
+    function bulkUpdateAssignmentStatus(status) {
+        const checkboxes = document.querySelectorAll('.assignment-checkbox:checked');
+        const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+
+        if (selectedIds.length === 0) {
+            alert('課題を選択してください。');
+            return;
+        }
+
+        const statusNames = {
+            'NotStarted': '未着手',
+            'InProgress': '進行中',
+            'Completed': '完了'
+        };
+
+        const confirmMessage = `選択した${selectedIds.length}件の課題を「${statusNames[status]}」に変更しますか？`;
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        // フォームを作成して送信
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '@Url.Action("BulkUpdateAssignmentStatus", "StudentGroup", new { studentGroupId = Model.Id })';
+
+        // CSRF トークンを追加
+        const csrfToken = document.querySelector('input[name="__RequestVerificationToken"]');
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '__RequestVerificationToken';
+            csrfInput.value = csrfToken.value;
+            form.appendChild(csrfInput);
+        }
+
+        // 選択された課題IDを追加
+        selectedIds.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'assignmentIds';
+            input.value = id;
+            form.appendChild(input);
+        });
+
+        // 新しいステータスを追加
+        const statusInput = document.createElement('input');
+        statusInput.type = 'hidden';
+        statusInput.name = 'status';
+        statusInput.value = status;
+        form.appendChild(statusInput);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+</script>
+}

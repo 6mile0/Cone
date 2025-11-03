@@ -31,7 +31,7 @@ public class NotificationService(IServerSentEventsService serverSentEventsServic
         await serverSentEventsService.SendEventAsync(message);
     }
 
-    public async Task NotifyStaffStatusAsync(StaffStatusResDto staffStatus)
+    public async Task NotifyStaffStatusAsync(StaffStatusResDto staffStatus, CancellationToken cancellationToken)
     {
         var message = JsonSerializer.Serialize(new
         {
@@ -39,6 +39,6 @@ public class NotificationService(IServerSentEventsService serverSentEventsServic
             data = staffStatus
         }, SerializerOptions);
 
-        await serverSentEventsService.SendEventAsync(message);
+        await serverSentEventsService.SendEventAsync(message, cancellationToken);
     }
 }
