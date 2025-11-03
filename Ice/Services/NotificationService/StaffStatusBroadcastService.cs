@@ -78,6 +78,6 @@ public class StaffStatusBroadcastService(
             Timestamp = DateTime.UtcNow
         };
 
-        await notificationService.NotifyStaffStatusAsync(staffStatus);
+        await notificationService.NotifyStaffStatusAsync(staffStatus, cancellationToken);
     }
 }

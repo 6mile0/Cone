@@ -23,10 +23,6 @@
             @if (Model.AssignmentProgress.Any())
             {
                 <div class="mb-3">
-                    <div class="d-flex flex-wrap gap-2">
-                        <button type="button" class="btn btn-sm btn-secondary" onclick="selectAllAssignments()">全選択</button>
-                        <button type="button" class="btn btn-sm btn-secondary" onclick="deselectAllAssignments()">選択解除</button>
-                    </div>
                     <div class="d-flex flex-wrap gap-2 mt-2">
                         <button type="button" class="btn btn-sm btn-secondary flex-fill" onclick="bulkUpdateAssignmentStatus('NotStarted')">
                             <span class="d-none d-md-inline">選択した課題を</span>未着手<span class="d-none d-md-inline">にする</span>
@@ -46,7 +42,6 @@
                             <th style="width: 60px;">
                                 <label class="checkbox-label">
                                     <input type="checkbox" id="selectAllCheckbox" onchange="toggleAllAssignments(this.checked)">
-                                    <span class="d-none d-md-inline ms-1">全選択</span>
                                 </label>
                             </th>
                             <th>課題名</th>
