@@ -10,11 +10,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cone.Services.TicketService;
 
-public class TicketService(ConeDbContext ConeDbContext, INotificationService notificationService) : ITicketService
+public class TicketService(ConeDbContext coneDbContext, INotificationService notificationService) : ITicketService
 {
     public async Task<IReadOnlyList<Tickets>> GetAllTicketsAsync(CancellationToken cancellationToken)
     {
-        return await ConeDbContext.Tickets
+        return await coneDbContext.Tickets
             .Include(t => t.StudentGroup)
             .Include(t => t.TicketAdminUser)
             .ThenInclude(tau => tau!.AdminUser)
@@ -24,7 +24,7 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
 
     public async Task<Tickets?> GetTicketByIdAsync(long ticketId, CancellationToken cancellationToken)
     {
-        return await ConeDbContext.Tickets
+        return await coneDbContext.Tickets
             .Include(t => t.StudentGroup)
             .Include(t => t.TicketAdminUser)
             .ThenInclude(tau => tau!.AdminUser)
@@ -34,7 +34,7 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
     public async Task<IReadOnlyList<Tickets>> GetTicketsByStudentGroupIdAsync(long studentGroupId,
         CancellationToken cancellationToken)
     {
-        return await ConeDbContext.Tickets
+        return await coneDbContext.Tickets
             .Where(t => t.StudentGroupId == studentGroupId)
             .Include(t => t.TicketAdminUser)
             .ThenInclude(tau => tau!.AdminUser)
@@ -44,10 +44,10 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
 
     public async Task<AddTicketResDto> CreateTicketAsync(AddTicketDto addTicketDto, CancellationToken cancellationToken)
     {
-        var transaction = await ConeDbContext.Database.BeginTransactionAsync(cancellationToken);
+        var transaction = await coneDbContext.Database.BeginTransactionAsync(cancellationToken);
 
         // StudentGroupが存在するか確認
-        var studentGroup = await ConeDbContext.StudentGroups
+        var studentGroup = await coneDbContext.StudentGroups
             .FirstAsync(sg => sg.Id == addTicketDto.StudentGroupId, cancellationToken);
 
 
@@ -65,8 +65,8 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
             UpdatedAt = DateTime.UtcNow
         };
 
-        ConeDbContext.Tickets.Add(ticket);
-        await ConeDbContext.SaveChangesAsync(cancellationToken);
+        coneDbContext.Tickets.Add(ticket);
+        await coneDbContext.SaveChangesAsync(cancellationToken);
 
         // 講師を割り当てる
         var targetTutor = await AssignTutorToTicketAsync(ticket.Id, cancellationToken);
@@ -82,7 +82,7 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
             ticket.Id,
             ticket.Title,
             studentGroup.GroupName,
-            targetTutor.FullName ?? "未割当"
+            targetTutor.FullName
         );
 
         return new AddTicketResDto
@@ -94,7 +94,7 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
 
     public async Task<Tickets> UpdateTicketAsync(UpdateTicketReqDto req, CancellationToken cancellationToken)
     {
-        var ticket = await ConeDbContext.Tickets
+        var ticket = await coneDbContext.Tickets
             .FirstOrDefaultAsync(t => t.Id == req.TicketId, cancellationToken);
 
         if (ticket == null)
@@ -107,15 +107,15 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
         ticket.Remark = req.Remark;
         ticket.UpdatedAt = DateTime.UtcNow;
 
-        ConeDbContext.Tickets.Update(ticket);
-        await ConeDbContext.SaveChangesAsync(cancellationToken);
+        coneDbContext.Tickets.Update(ticket);
+        await coneDbContext.SaveChangesAsync(cancellationToken);
 
         return ticket;
     }
 
     public async Task DeleteTicketAsync(long ticketId, CancellationToken cancellationToken)
     {
-        var ticket = await ConeDbContext.Tickets
+        var ticket = await coneDbContext.Tickets
             .FirstOrDefaultAsync(t => t.Id == ticketId, cancellationToken);
 
         if (ticket == null)
@@ -123,14 +123,14 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
             throw new EntityNotFoundException($"チケットID {ticketId} のチケットが見つかりません。");
         }
 
-        ConeDbContext.Tickets.Remove(ticket);
-        await ConeDbContext.SaveChangesAsync(cancellationToken);
+        coneDbContext.Tickets.Remove(ticket);
+        await coneDbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<Tickets?> IsAbleAddTicketAsync(long studentGroupId, CancellationToken cancellationToken)
     {
         // 未解決のチケットが存在するか確認
-        return await ConeDbContext.Tickets
+        return await coneDbContext.Tickets
             .Include(t => t.TicketAdminUser)
             .ThenInclude(tau => tau!.AdminUser)
             .FirstOrDefaultAsync(t => t.StudentGroupId == studentGroupId && t.Status == TicketStatus.InProgress,
@@ -139,9 +139,9 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
 
     public async Task<Tickets> AssignTicketAsync(AssignTicketReqDto req, CancellationToken cancellationToken)
     {
-        await using var transaction = await ConeDbContext.Database.BeginTransactionAsync(cancellationToken);
+        await using var transaction = await coneDbContext.Database.BeginTransactionAsync(cancellationToken);
 
-        var ticket = await ConeDbContext.Tickets
+        var ticket = await coneDbContext.Tickets
             .FirstOrDefaultAsync(t => t.Id == req.TicketId, cancellationToken);
 
         if (ticket == null)
@@ -149,7 +149,7 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
             throw new EntityNotFoundException($"チケットID {req.TicketId} のチケットが見つかりません。");
         }
 
-        var adminUser = await ConeDbContext.AdminUsers
+        var adminUser = await coneDbContext.AdminUsers
             .FirstOrDefaultAsync(a => a.Id == req.AdminUserId, cancellationToken);
 
         if (adminUser == null)
@@ -158,12 +158,12 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
         }
 
         // 既存の担当者レコードを削除
-        var existingAssignment = await ConeDbContext.TicketAdminUsers
+        var existingAssignment = await coneDbContext.TicketAdminUsers
             .FirstOrDefaultAsync(tau => tau.TicketId == req.TicketId, cancellationToken);
 
         if (existingAssignment != null)
         {
-            ConeDbContext.TicketAdminUsers.Remove(existingAssignment);
+            coneDbContext.TicketAdminUsers.Remove(existingAssignment);
         }
 
         // 新しい担当者レコードを追加
@@ -175,9 +175,9 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
             UpdatedAt = DateTime.UtcNow
         };
 
-        ConeDbContext.TicketAdminUsers.Add(newAssignment);
+        coneDbContext.TicketAdminUsers.Add(newAssignment);
         ticket.UpdatedAt = DateTime.UtcNow;
-        await ConeDbContext.SaveChangesAsync(cancellationToken);
+        await coneDbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
         return ticket;
@@ -186,7 +186,7 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
     private async Task<AdminUsers> AssignTutorToTicketAsync(long ticketId, CancellationToken cancellationToken)
     {
         // 対応中のチケットとその担当講師を取得
-        var inProgressTickets = await ConeDbContext.Tickets
+        var inProgressTickets = await coneDbContext.Tickets
             .Where(t => t.Status == TicketStatus.InProgress)
             .Include(t => t.TicketAdminUser)
             .ToListAsync(cancellationToken);
@@ -198,7 +198,7 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
             .ToDictionary(g => g.Key, g => g.Count());
 
         // すべての講師を取得
-        var allTutors = await ConeDbContext.AdminUsers.ToListAsync(cancellationToken);
+        var allTutors = await coneDbContext.AdminUsers.ToListAsync(cancellationToken);
 
         if (allTutors.Count == 0)
         {
@@ -221,7 +221,7 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
         if (availableTutors.Count == allTutors.Count)
         {
             // 全員が対応中でない場合、総チケット数が最も少ない講師を選択
-            var ticketCounts = await ConeDbContext.TicketAdminUsers
+            var ticketCounts = await coneDbContext.TicketAdminUsers
                 .GroupBy(tau => tau.AdminUserId)
                 .Select(g => new { AdminUserId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.AdminUserId, x => x.Count, cancellationToken
@@ -248,8 +248,8 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
             UpdatedAt = DateTime.UtcNow
         };
 
-        ConeDbContext.TicketAdminUsers.Add(adminUserTicket);
-        await ConeDbContext.SaveChangesAsync(cancellationToken);
+        coneDbContext.TicketAdminUsers.Add(adminUserTicket);
+        await coneDbContext.SaveChangesAsync(cancellationToken);
 
         return targetUser;
     }
@@ -257,7 +257,7 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
     private async Task LinkAssignmentToTicketAsync(long ticketId, long assignmentId, long studentGroupId,
         CancellationToken cancellationToken)
     {
-        var assignmentExists = await ConeDbContext.Assignments
+        var assignmentExists = await coneDbContext.Assignments
             .AnyAsync(a => a.Id == assignmentId, cancellationToken);
 
         if (!assignmentExists)
@@ -274,7 +274,7 @@ public class TicketService(ConeDbContext ConeDbContext, INotificationService not
             StudentGroupId = studentGroupId
         };
 
-        ConeDbContext.TicketAssignments.Add(ticketAssignment);
-        await ConeDbContext.SaveChangesAsync(cancellationToken);
+        coneDbContext.TicketAssignments.Add(ticketAssignment);
+        await coneDbContext.SaveChangesAsync(cancellationToken);
     }
 }
