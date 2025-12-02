@@ -22,10 +22,12 @@ public class AdminUsers
     [EmailAddress]
     [MaxLength(255)]
     public required string Email { get; set; }
-    
+
+    public bool IsAbsent { get; set; }
+
     [Required]
     public required DateTimeOffset CreatedAt { get; set; }
-    
+
     [ConcurrencyCheck]
     public required DateTimeOffset UpdatedAt { get; set; }
 }

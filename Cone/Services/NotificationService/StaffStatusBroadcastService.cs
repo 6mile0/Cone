@@ -45,7 +45,9 @@ public class StaffStatusBroadcastService(
         var adminUsers = await adminUserService.GetAllAdminUsersAsync(cancellationToken);
         var tickets = await ticketService.GetAllTicketsAsync(cancellationToken);
 
-        var adminUserStatuses = adminUsers.Select(adminUser =>
+        var adminUserStatuses = adminUsers
+            .Where(adminUser => !adminUser.IsAbsent)
+            .Select(adminUser =>
         {
             var assignedTickets = tickets.Where(t => t.TicketAdminUser?.AdminUserId == adminUser.Id).ToList();
 

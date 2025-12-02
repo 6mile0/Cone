@@ -42,14 +42,17 @@ public class TicketController(ITicketService ticketService, IAdminUserService ad
             UpdatedAt = t.UpdatedAt
         }).ToList();
 
-        var adminUsersViewModels = adminUsers.Select(a => new AdminUserViewModel
-        {
-            Id = a.Id,
-            FullName = a.FullName,
-            TutorType = a.TutorType,
-            CreatedAt = a.CreatedAt,
-            UpdatedAt = a.UpdatedAt
-        }).ToList();
+        var adminUsersViewModels = adminUsers
+            .Where(a => !a.IsAbsent)
+            .Select(a => new AdminUserViewModel
+            {
+                Id = a.Id,
+                FullName = a.FullName,
+                TutorType = a.TutorType,
+                IsAbsent = a.IsAbsent,
+                CreatedAt = a.CreatedAt,
+                UpdatedAt = a.UpdatedAt
+            }).ToList();
 
         return View("Index", new TicketViewModelList
         {
@@ -75,19 +78,23 @@ public class TicketController(ITicketService ticketService, IAdminUserService ad
             Id = ticket.TicketAdminUser.AdminUser.Id,
             FullName = ticket.TicketAdminUser.AdminUser.FullName,
             TutorType = Enum.Parse<TutorTypes>(ticket.TicketAdminUser.AdminUser.TutorType.ToString()),
+            IsAbsent = ticket.TicketAdminUser.AdminUser.IsAbsent,
             CreatedAt = ticket.TicketAdminUser.AdminUser.CreatedAt,
             UpdatedAt = ticket.TicketAdminUser.AdminUser.UpdatedAt
         } : null;
 
         var adminUsers = await adminUserService.GetAllAdminUsersAsync(cancellationToken);
-        var adminUsersViewModels = adminUsers.Select(a => new AdminUserViewModel
-        {
-            Id = a.Id,
-            FullName = a.FullName,
-            TutorType = a.TutorType,
-            CreatedAt = a.CreatedAt,
-            UpdatedAt = a.UpdatedAt
-        }).ToList();
+        var adminUsersViewModels = adminUsers
+            .Where(a => !a.IsAbsent)
+            .Select(a => new AdminUserViewModel
+            {
+                Id = a.Id,
+                FullName = a.FullName,
+                TutorType = a.TutorType,
+                IsAbsent = a.IsAbsent,
+                CreatedAt = a.CreatedAt,
+                UpdatedAt = a.UpdatedAt
+            }).ToList();
 
         var viewModel = new TicketDetailViewModel
         {

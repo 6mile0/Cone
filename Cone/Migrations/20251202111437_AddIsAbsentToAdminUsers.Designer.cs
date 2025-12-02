@@ -3,6 +3,7 @@ using System;
 using Cone.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Cone.Migrations
 {
     [DbContext(typeof(ConeDbContext))]
-    partial class ConeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251202111437_AddIsAbsentToAdminUsers")]
+    partial class AddIsAbsentToAdminUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
