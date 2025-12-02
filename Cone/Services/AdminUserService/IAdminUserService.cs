@@ -26,4 +26,12 @@ public interface IAdminUserService
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task DeleteAdminUserAsync(long adminUserId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Toggles the absent status of an admin user.
+    /// </summary>
+    /// <param name="adminUserId">The ID of the admin user to toggle absent status.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>The updated admin user.</returns>
+    Task<AdminUsers> ToggleAbsentStatusAsync(long adminUserId, CancellationToken cancellationToken);
 }
