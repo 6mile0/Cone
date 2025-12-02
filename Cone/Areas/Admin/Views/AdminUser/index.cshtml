@@ -21,6 +21,7 @@
             <tr>
                 <th>名前</th>
                 <th>種別</th>
+                <th>状態</th>
                 <th>作成日時</th>
                 <th>操作</th>
             </tr>
@@ -31,8 +32,24 @@
                 <tr>
                     <td>@user.FullName</td>
                     <td>@(user.TutorType == Cone.Enums.TutorTypes.TeachingAssistant ? "TA" : "SA")</td>
+                    <td>
+                        @if (user.IsAbsent)
+                        {
+                            <span class="badge bg-secondary">お休み中</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">出講中</span>
+                        }
+                    </td>
                     <td>@user.CreatedAt.ToJst().ToString("yyyy/MM/dd HH:mm")</td>
                     <td>
+                        <form method="post" asp-action="ToggleAbsent" style="display: inline;">
+                            <input type="hidden" name="adminUserId" value="@user.Id" />
+                            <button type="submit" class="btn btn-sm @(user.IsAbsent ? "btn-outline-success" : "btn-outline-secondary") me-2">
+                                @(user.IsAbsent ? "出講中にする" : "お休みモードにする")
+                            </button>
+                        </form>
                         <form method="post" asp-action="DeleteUser" style="display: inline;">
                             <input type="hidden" name="adminUserId" value="@user.Id" />
                             <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('@user.FullName を削除してもよろしいですか？')">削除</button>
