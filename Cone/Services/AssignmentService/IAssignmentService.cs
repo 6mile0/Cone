@@ -93,4 +93,12 @@ public interface IAssignmentService
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A list of unassigned student groups.</returns>
     Task<IReadOnlyList<StudentGroups>> GetUnassignedStudentGroupsAsync(long assignmentId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Export assignment progress data to Excel format.
+    /// Student groups (classes) are rows, assignments are columns.
+    /// </summary>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A byte array containing the Excel file data.</returns>
+    Task<byte[]> ExportAssignmentProgressToExcelAsync(CancellationToken cancellationToken);
 }

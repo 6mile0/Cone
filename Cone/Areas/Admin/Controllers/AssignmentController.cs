@@ -263,4 +263,13 @@ public class AssignmentController(
         flashMessage.Info("学生グループから課題の割り当てを解除しました。");
         return RedirectToAction("Detail", new { id = assignmentId });
     }
+
+    [HttpGet("export-excel")]
+    public async Task<IActionResult> ExportProgressExcel(CancellationToken cancellationToken)
+    {
+        var excelData = await assignmentService.ExportAssignmentProgressToExcelAsync(cancellationToken);
+        var fileName = $"課題進捗状況_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+
+        return File(excelData, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+    }
 }

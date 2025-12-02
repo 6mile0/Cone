@@ -1,4 +1,5 @@
-﻿using Cone.Areas.Admin.Dtos.Req;
+﻿using ClosedXML.Excel;
+using Cone.Areas.Admin.Dtos.Req;
 using Cone.Db;
 using Cone.Db.Models;
 using Cone.Enums;
@@ -204,4 +205,85 @@ public class AssignmentService(ConeDbContext coneDbContext) : IAssignmentService
             await coneDbContext.SaveChangesAsync(cancellationToken);
         }
     }
+
+    public async Task<byte[]> ExportAssignmentProgressToExcelAsync(CancellationToken cancellationToken)
+{
+    var assignments = await coneDbContext.Assignments
+        .OrderBy(a => a.SortOrder)
+        .ToListAsync(cancellationToken);
+
+    var studentGroups = await coneDbContext.StudentGroups
+        .OrderBy(g => g.GroupName)
+        .ToListAsync(cancellationToken);
+
+    var progressData = await coneDbContext.StudentGroupAssignmentsProgress
+        .ToListAsync(cancellationToken);
+
+    using var workbook = new XLWorkbook();
+    var worksheet = workbook.Worksheets.Add("課題進捗状況");
+
+    worksheet.Style.Font.FontName = "Yu Gothic";
+
+    worksheet.Cell(1, 1).Value = "課題チェック";
+    worksheet.Cell(1, 1).Style.Font.Bold = true;
+    worksheet.Cell(1, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+
+    for (var i = 0; i < assignments.Count; i++)
+    {
+        var cell = worksheet.Cell(1, i + 2);
+        cell.Value = assignments[i].Name;
+        cell.Style.Font.Bold = true;
+        cell.Style.Fill.BackgroundColor = XLColor.LightGray;
+        cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+    }
+
+    for (var rowIndex = 0; rowIndex < studentGroups.Count; rowIndex++)
+    {
+        var group = studentGroups[rowIndex];
+        var excelRow = rowIndex + 2;
+
+        worksheet.Cell(excelRow, 1).Value = group.GroupName;
+
+        for (var colIndex = 0; colIndex < assignments.Count; colIndex++)
+        {
+            var assignment = assignments[colIndex];
+            var excelCol = colIndex + 2;
+
+            var progress = progressData.FirstOrDefault(p =>
+                p.StudentGroupId == group.Id && p.AssignmentId == assignment.Id);
+
+            var statusDisplay = progress?.Status switch
+            {
+                AssignmentProgress.Completed => "○",
+                AssignmentProgress.InProgress => "進行中",
+                _ => "-"
+            };
+
+            var cell = worksheet.Cell(excelRow, excelCol);
+            cell.Value = statusDisplay;
+            cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            cell.Style.Fill.BackgroundColor = progress?.Status switch
+            {
+                AssignmentProgress.Completed => XLColor.LightGreen,
+                AssignmentProgress.InProgress => XLColor.LightYellow,
+                _ => cell.Style.Fill.BackgroundColor
+            };
+        }
+    }
+
+    worksheet.Columns().AdjustToContents();
+
+    foreach (var col in worksheet.ColumnsUsed())
+    {
+        if (col.Width < 12.0)
+        {
+            col.Width = 12.0;
+        }
+    }
+
+    using var stream = new MemoryStream();
+    workbook.SaveAs(stream);
+    return stream.ToArray();
+}
 }
