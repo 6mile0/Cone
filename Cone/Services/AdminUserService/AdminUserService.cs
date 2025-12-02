@@ -44,4 +44,22 @@ public class AdminUserService(ConeDbContext coneDbContext): IAdminUserService
         coneDbContext.AdminUsers.Remove(adminUser);
         await coneDbContext.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<AdminUsers> ToggleAbsentStatusAsync(long adminUserId, CancellationToken cancellationToken)
+    {
+        var adminUser = await coneDbContext.AdminUsers
+            .FirstOrDefaultAsync(u => u.Id == adminUserId, cancellationToken);
+
+        if (adminUser == null)
+        {
+            throw new EntityNotFoundException($"Admin user with ID {adminUserId} not found.");
+        }
+
+        adminUser.IsAbsent = !adminUser.IsAbsent;
+        adminUser.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await coneDbContext.SaveChangesAsync(cancellationToken);
+
+        return adminUser;
+    }
 }
