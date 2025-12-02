@@ -1,7 +1,7 @@
 ﻿services:
   app:
     build:
-      context: Ice
+      context: Cone
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
@@ -11,16 +11,16 @@
       - db
     restart: always
   db:
-    container_name: ice-db
+    container_name: cone-db
     image: postgres:17.5
     ports:
       - "5432:5432"
     volumes:
-      - ice_db:/var/lib/postgresql/data
+      - cone_db:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=ice
-      - POSTGRES_USER=ice
-      - POSTGRES_PASSWORD=icepassword
+      - POSTGRES_DB=cone
+      - POSTGRES_USER=cone
+      - POSTGRES_PASSWORD=conepassword
     restart: always
 volumes:
-  ice_db:
+  cone_db:

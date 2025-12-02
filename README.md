@@ -1,5 +1,5 @@
-﻿# Ice
-チケットベースで学生がTA/SAに質問できる機能を備えた講義支援システムです。 チケットごとの担当変更機能や学生班ごとの進捗管理機能を備えており、講義運営を効率化できます。  
+﻿# Cone
+チケットベースで学生がTA/SAに質問できる機能を備えた講義支援システムです。 チケットごとの担当変更機能や学生班ごとの進捗管理機能を備えており、講義運営を効率化できます。
 東京工科大学 先進情報専門演習・基盤I/II[IP・3] で実際に使用されています。
 
 ## 準備
@@ -9,17 +9,17 @@
 ## マイグレーション
 ### 作成
 ```bash
-dotnet ef migrations add hogehoge --project Ice.csproj --context IceDbContext -- --environment Development
+dotnet ef migrations add hogehoge --project Cone.csproj --context ConeDbContext -- --environment Development
 ```
 
 ## SQLの確認
 ```bash
-dotnet ef migrations script --project Ice.csproj --context IceDbContext -- --environment Development
+dotnet ef migrations script --project Cone.csproj --context ConeDbContext -- --environment Development
 ```
 
 ### 適用
 ```bash
-dotnet ef database update --project Ice.csproj --context IceDbContext -- --environment Development
+dotnet ef database update --project Cone.csproj --context ConeDbContext -- --environment Development
 ```
 
 ## 貢献
