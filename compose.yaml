@@ -1,14 +1,14 @@
 ﻿services:
-  ice-db:
+  cone-db:
     container_name: cone-db
-    image: postgres:17.5
+    image: postgres:18.1
     ports:
       - "5432:5432"
     volumes:
-      - cone_db:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     environment:
       - POSTGRES_DB=cone
       - POSTGRES_USER=cone
       - POSTGRES_PASSWORD=conepassword
 volumes:
-  cone_db:
+  postgres_data:
