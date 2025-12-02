@@ -197,8 +197,10 @@ public class TicketService(ConeDbContext coneDbContext, INotificationService not
             .GroupBy(t => t.TicketAdminUser!.AdminUserId)
             .ToDictionary(g => g.Key, g => g.Count());
 
-        // すべての講師を取得
-        var allTutors = await coneDbContext.AdminUsers.ToListAsync(cancellationToken);
+        // すべての講師を取得（不在の講師を除外）
+        var allTutors = await coneDbContext.AdminUsers
+            .Where(u => !u.IsAbsent)
+            .ToListAsync(cancellationToken);
 
         if (allTutors.Count == 0)
         {
@@ -216,29 +218,8 @@ public class TicketService(ConeDbContext coneDbContext, INotificationService not
             throw new AllStaffCurrentlyAssistingException("TA/SAの全員が対応中です。しばらく経ってから再度チケットを作成してください。");
         }
 
-        // 対応できる講師の中で最も総チケット数が少ない講師を選択
-        AdminUsers targetUser;
-        if (availableTutors.Count == allTutors.Count)
-        {
-            // 全員が対応中でない場合、総チケット数が最も少ない講師を選択
-            var ticketCounts = await coneDbContext.TicketAdminUsers
-                .GroupBy(tau => tau.AdminUserId)
-                .Select(g => new { AdminUserId = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => x.AdminUserId, x => x.Count, cancellationToken
-                );
-            var minTicketCount = ticketCounts.Values.Min();
-            var candidates = availableTutors
-                .Where(tutor => ticketCounts.GetValueOrDefault(tutor.Id, 0) == minTicketCount)
-                .ToList();
-            targetUser = candidates.First();
-        }
-        else
-        {
-            // 対応中でない講師の中からランダムに選択
-            var random = new Random();
-            var randomIndex = random.Next(availableTutors.Count);
-            targetUser = availableTutors[randomIndex];
-        }
+        // 利用可能な講師の中からランダムに選ぶ
+        var targetUser = availableTutors[Random.Shared.Next(availableTutors.Count)];
         
         var adminUserTicket = new TicketAdminUsers
         {
