@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Net;
+using System.Security.Claims;
 using Cone.Db;
 using Cone.Db.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -19,9 +20,9 @@ public static class WebApplicationBuilderExtension
             builder.Configuration.GetSection("ForwardedHeaders")
                 .GetSection("KnownNetworks")
                 .Get<string[]>()?
-                .Select(x => IPNetwork.Parse(x))
+                .Select(System.Net.IPNetwork.Parse)
                 .ToList()
-                .ForEach(x => options.KnownNetworks.Add(x));
+                .ForEach(x => options.KnownIPNetworks.Add(x));
 
             builder.ConfigureTrustCloudFlareProxy(options);
             
@@ -150,7 +151,7 @@ public static class WebApplicationBuilderExtension
 
         using var httpClient = new HttpClient();
 
-        var allNetworks = new List<IPNetwork>();
+        var allNetworks = new List<System.Net.IPNetwork>();
 
         foreach (var url in urls)
         {
@@ -166,7 +167,7 @@ public static class WebApplicationBuilderExtension
                     .Split('\n', StringSplitOptions.RemoveEmptyEntries)
                     .Select(line => line.Trim())
                     .Where(line => !string.IsNullOrWhiteSpace(line) && !line.StartsWith($"#"))
-                    .Select(s => IPNetwork.Parse(s));
+                    .Select(System.Net.IPNetwork.Parse);
 
                 allNetworks.AddRange(networks);
             }
@@ -176,7 +177,7 @@ public static class WebApplicationBuilderExtension
             }
         }
 
-        allNetworks.ForEach(x => options.KnownNetworks.Add(x));
+        allNetworks.ForEach(x => options.KnownIPNetworks.Add(x));
 
         return webApplicationBuilder;
     }
