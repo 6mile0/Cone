@@ -17,7 +17,7 @@ namespace Cone.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -42,6 +42,9 @@ namespace Cone.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsAbsent")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("TutorType")
                         .IsRequired()
