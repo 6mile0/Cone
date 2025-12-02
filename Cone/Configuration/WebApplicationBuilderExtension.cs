@@ -11,174 +11,175 @@ namespace Cone.Configuration;
 
 public static class WebApplicationBuilderExtension
 {
-    public static WebApplicationBuilder AddConeConfiguration(this WebApplicationBuilder builder)
+    extension(WebApplicationBuilder builder)
     {
-        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        public WebApplicationBuilder AddConeConfiguration()
         {
-            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto |
-                                       ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedPrefix;
-            builder.Configuration.GetSection("ForwardedHeaders")
-                .GetSection("KnownNetworks")
-                .Get<string[]>()?
-                .Select(System.Net.IPNetwork.Parse)
-                .ToList()
-                .ForEach(x => options.KnownIPNetworks.Add(x));
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto |
+                                           ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedPrefix;
+                builder.Configuration.GetSection("ForwardedHeaders")
+                    .GetSection("KnownNetworks")
+                    .Get<string[]>()?
+                    .Select(System.Net.IPNetwork.Parse)
+                    .ToList()
+                    .ForEach(x => options.KnownIPNetworks.Add(x));
 
-            builder.ConfigureTrustCloudFlareProxy(options);
+                builder.ConfigureTrustCloudFlareProxy(options);
             
-            options.ForwardLimit = null;
-        });
+                options.ForwardLimit = null;
+            });
         
-        builder.Services.AddControllersWithViews();
-        builder.Services.AddRazorPages();
+            builder.Services.AddControllersWithViews();
+            builder.Services.AddRazorPages();
 
-        // Add DB configuration
-        builder.AddConeDbConfiguration();
+            // Add DB configuration
+            builder.AddConeDbConfiguration();
 
-        // Add custom services
-        builder.Services.AddConeServices(builder.Configuration);
+            // Add custom services
+            builder.Services.AddConeServices(builder.Configuration);
 
-        // Configure Sentry
-        builder.ConfigureSentry();
+            // Configure Sentry
+            builder.ConfigureSentry();
 
-        // Add Google Authentication
-        builder.AddGoogleAuthentication();
+            // Add Google Authentication
+            builder.AddGoogleAuthentication();
 
-        return builder;
-    }
-
-    private static WebApplicationBuilder AddConeDbConfiguration(this WebApplicationBuilder webApplicationBuilder)
-    {
-        var dbConnectionString = webApplicationBuilder.Configuration.GetConnectionString("DbConnection")
-                                 ?? throw new InvalidOperationException("DB ConnectionString must not be null.");
-
-        webApplicationBuilder.Services.AddDbContext<ConeDbContext>(options =>
-            options.UseNpgsql(dbConnectionString)
-        );
-
-        // Register IConeDbContext to resolve to ConeDbContext
-        webApplicationBuilder.Services.AddScoped<IConeDbContext>(provider =>
-            provider.GetRequiredService<ConeDbContext>());
-
-        return webApplicationBuilder;
-    }
-
-    private static WebApplicationBuilder ConfigureSentry(this WebApplicationBuilder webApplicationBuilder)
-    {
-        var dsn = webApplicationBuilder.Configuration.GetValue<string>("Sentry:Dsn");
-        var isTargetEnvironment = webApplicationBuilder.Environment.IsProduction() ||
-                                  webApplicationBuilder.Environment.IsStaging();
-
-        if (isTargetEnvironment && string.IsNullOrWhiteSpace(dsn))
-        {
-            throw new InvalidOperationException("Sentry DSN is not configured.");
+            return builder;
         }
 
-        webApplicationBuilder.WebHost.UseSentry(o =>
+        private WebApplicationBuilder AddConeDbConfiguration()
         {
-            o.Dsn = dsn ?? string.Empty;
-            o.Debug = webApplicationBuilder.Environment.IsDevelopment();
-        });
+            var dbConnectionString = builder.Configuration.GetConnectionString("DbConnection")
+                                     ?? throw new InvalidOperationException("DB ConnectionString must not be null.");
 
-        return webApplicationBuilder;
-    }
+            builder.Services.AddDbContext<ConeDbContext>(options =>
+                options.UseNpgsql(dbConnectionString)
+            );
 
-    private static WebApplicationBuilder AddGoogleAuthentication(this WebApplicationBuilder webApplicationBuilder)
-    {
-        var googleClientId = webApplicationBuilder.Configuration.GetValue<string>("GoogleAuth:ClientId");
-        var googleClientSecret =
-            webApplicationBuilder.Configuration.GetValue<string>("GoogleAuth:ClientSecret");
+            // Register IConeDbContext to resolve to ConeDbContext
+            builder.Services.AddScoped<IConeDbContext>(provider =>
+                provider.GetRequiredService<ConeDbContext>());
 
-        if (string.IsNullOrWhiteSpace(googleClientId) || string.IsNullOrWhiteSpace(googleClientSecret))
-        {
-            throw new InvalidOperationException("Google Authentication is not configured properly.");
+            return builder;
         }
 
-        webApplicationBuilder.Services.AddAuthentication(options =>
+        private WebApplicationBuilder ConfigureSentry()
+        {
+            var dsn = builder.Configuration.GetValue<string>("Sentry:Dsn");
+            var isTargetEnvironment = builder.Environment.IsProduction() ||
+                                      builder.Environment.IsStaging();
+
+            if (isTargetEnvironment && string.IsNullOrWhiteSpace(dsn))
             {
-                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-            })
-            .AddCookie(options =>
+                throw new InvalidOperationException("Sentry DSN is not configured.");
+            }
+
+            builder.WebHost.UseSentry(o =>
             {
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                options.AccessDeniedPath = "/error/403";
-            })
-            .AddGoogle(options =>
-            {
-                options.ClientId = googleClientId;
-                options.ClientSecret = googleClientSecret;
-                
-                options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-                options.CallbackPath = "/signin-google";
+                o.Dsn = dsn ?? string.Empty;
+                o.Debug = builder.Environment.IsDevelopment();
             });
 
-        // 管理者ポリシー登録
-        webApplicationBuilder.Services.AddAuthorizationBuilder()
-            .AddPolicy("Admin", policyBuilder => { policyBuilder.Requirements.Add(new CustomAdminRequirement()); });
-
-        // 特定のドメインでのアクセスを許可するポリシーの追加
-        var allowedDomains = webApplicationBuilder.Configuration.GetSection("AllowedEmailEndPrefixes").Get<string[]>();
-        if (allowedDomains == null || allowedDomains.Length == 0)
-        {
-            throw new InvalidOperationException("AllowedEmailEndPrefixes is not configured.");
+            return builder;
         }
 
-        webApplicationBuilder.Services.AddAuthorizationBuilder()
-            .AddPolicy("AllowedEmailDomain",
-                policyBuilder =>
+        private WebApplicationBuilder AddGoogleAuthentication()
+        {
+            var googleClientId = builder.Configuration.GetValue<string>("GoogleAuth:ClientId");
+            var googleClientSecret =
+                builder.Configuration.GetValue<string>("GoogleAuth:ClientSecret");
+
+            if (string.IsNullOrWhiteSpace(googleClientId) || string.IsNullOrWhiteSpace(googleClientSecret))
+            {
+                throw new InvalidOperationException("Google Authentication is not configured properly.");
+            }
+
+            builder.Services.AddAuthentication(options =>
                 {
-                    policyBuilder.RequireAssertion(context =>
-                    {
-                        var email = context.User.FindFirstValue(ClaimTypes.Email);
-                        if (string.IsNullOrEmpty(email)) return false;
-                        return allowedDomains.Any(domain =>
-                            email.EndsWith("@" + domain, StringComparison.OrdinalIgnoreCase));
-                    });
+                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+                })
+                .AddCookie(options =>
+                {
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    options.AccessDeniedPath = "/error/403";
+                })
+                .AddGoogle(options =>
+                {
+                    options.ClientId = googleClientId;
+                    options.ClientSecret = googleClientSecret;
+                
+                    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+                    options.CallbackPath = "/signin-google";
                 });
 
-        webApplicationBuilder.Services.AddCascadingAuthenticationState();
+            // 管理者ポリシー登録
+            builder.Services.AddAuthorizationBuilder()
+                .AddPolicy("Admin", policyBuilder => { policyBuilder.Requirements.Add(new CustomAdminRequirement()); });
 
-        return webApplicationBuilder;
-    }
-    
-    private static WebApplicationBuilder ConfigureTrustCloudFlareProxy(
-        this WebApplicationBuilder webApplicationBuilder,
-        ForwardedHeadersOptions options
-    )
-    {
-        var urls = new[] { "https://www.cloudflare.com/ips-v4", "https://www.cloudflare.com/ips-v6" };
-
-        using var httpClient = new HttpClient();
-
-        var allNetworks = new List<System.Net.IPNetwork>();
-
-        foreach (var url in urls)
-        {
-            try
+            // 特定のドメインでのアクセスを許可するポリシーの追加
+            var allowedDomains = builder.Configuration.GetSection("AllowedEmailEndPrefixes").Get<string[]>();
+            if (allowedDomains == null || allowedDomains.Length == 0)
             {
-                using var webRequest = new HttpRequestMessage(HttpMethod.Get, url);
-                using var response = httpClient.Send(webRequest);
-                response.EnsureSuccessStatusCode();
-                using var reader = new StreamReader(response.Content.ReadAsStream());
-                var text = reader.ReadToEnd();
-
-                var networks = text
-                    .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(line => line.Trim())
-                    .Where(line => !string.IsNullOrWhiteSpace(line) && !line.StartsWith($"#"))
-                    .Select(System.Net.IPNetwork.Parse);
-
-                allNetworks.AddRange(networks);
+                throw new InvalidOperationException("AllowedEmailEndPrefixes is not configured.");
             }
-            catch (System.Exception ex)
-            {
-                throw new InvalidOperationException($"Failed to fetch Cloudflare IPs from {url}", ex);
-            }
+
+            builder.Services.AddAuthorizationBuilder()
+                .AddPolicy("AllowedEmailDomain",
+                    policyBuilder =>
+                    {
+                        policyBuilder.RequireAssertion(context =>
+                        {
+                            var email = context.User.FindFirstValue(ClaimTypes.Email);
+                            if (string.IsNullOrEmpty(email)) return false;
+                            return allowedDomains.Any(domain =>
+                                email.EndsWith("@" + domain, StringComparison.OrdinalIgnoreCase));
+                        });
+                    });
+
+            builder.Services.AddCascadingAuthenticationState();
+
+            return builder;
         }
 
-        allNetworks.ForEach(x => options.KnownIPNetworks.Add(x));
+        private WebApplicationBuilder ConfigureTrustCloudFlareProxy(ForwardedHeadersOptions options
+        )
+        {
+            var urls = new[] { "https://www.cloudflare.com/ips-v4", "https://www.cloudflare.com/ips-v6" };
 
-        return webApplicationBuilder;
+            using var httpClient = new HttpClient();
+
+            var allNetworks = new List<System.Net.IPNetwork>();
+
+            foreach (var url in urls)
+            {
+                try
+                {
+                    using var webRequest = new HttpRequestMessage(HttpMethod.Get, url);
+                    using var response = httpClient.Send(webRequest);
+                    response.EnsureSuccessStatusCode();
+                    using var reader = new StreamReader(response.Content.ReadAsStream());
+                    var text = reader.ReadToEnd();
+
+                    var networks = text
+                        .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(line => line.Trim())
+                        .Where(line => !string.IsNullOrWhiteSpace(line) && !line.StartsWith($"#"))
+                        .Select(System.Net.IPNetwork.Parse);
+
+                    allNetworks.AddRange(networks);
+                }
+                catch (System.Exception ex)
+                {
+                    throw new InvalidOperationException($"Failed to fetch Cloudflare IPs from {url}", ex);
+                }
+            }
+
+            allNetworks.ForEach(x => options.KnownIPNetworks.Add(x));
+
+            return builder;
+        }
     }
 }
