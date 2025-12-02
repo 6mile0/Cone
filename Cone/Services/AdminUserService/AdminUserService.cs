@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cone.Services.AdminUserService;
 
-public class AdminUserService(ConeDbContext ConeDbContext): IAdminUserService
+public class AdminUserService(ConeDbContext coneDbContext): IAdminUserService
 {
     public async Task<IReadOnlyList<AdminUsers>> GetAllAdminUsersAsync(CancellationToken cancellationToken)
     {
-        return await ConeDbContext.AdminUsers
+        return await coneDbContext.AdminUsers
             .ToListAsync(cancellationToken);
     }
 
@@ -25,15 +25,15 @@ public class AdminUserService(ConeDbContext ConeDbContext): IAdminUserService
             UpdatedAt = DateTimeOffset.UtcNow
         };
 
-        await ConeDbContext.AdminUsers.AddAsync(adminUser, cancellationToken);
-        await ConeDbContext.SaveChangesAsync(cancellationToken);
+        await coneDbContext.AdminUsers.AddAsync(adminUser, cancellationToken);
+        await coneDbContext.SaveChangesAsync(cancellationToken);
 
         return adminUser;
     }
 
     public async Task DeleteAdminUserAsync(long adminUserId, CancellationToken cancellationToken)
     {
-        var adminUser = await ConeDbContext.AdminUsers
+        var adminUser = await coneDbContext.AdminUsers
             .FirstOrDefaultAsync(u => u.Id == adminUserId, cancellationToken);
 
         if (adminUser == null)
@@ -41,7 +41,7 @@ public class AdminUserService(ConeDbContext ConeDbContext): IAdminUserService
             throw new EntityNotFoundException($"Admin user with ID {adminUserId} not found.");
         }
 
-        ConeDbContext.AdminUsers.Remove(adminUser);
-        await ConeDbContext.SaveChangesAsync(cancellationToken);
+        coneDbContext.AdminUsers.Remove(adminUser);
+        await coneDbContext.SaveChangesAsync(cancellationToken);
     }
 }

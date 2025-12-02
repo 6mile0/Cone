@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cone.Services.AssignmentStudentGroupService;
 
-public class AssignmentStudentGroupService(ConeDbContext ConeDbContext): IAssignmentStudentGroupService
+public class AssignmentStudentGroupService(ConeDbContext coneDbContext): IAssignmentStudentGroupService
 {
     public async Task<IReadOnlyList<StudentGroups>> GetNotStartedStudentGroupsAsync(long assignmentId, CancellationToken cancellationToken)
     {
-        var notStartedGroups = await ConeDbContext.StudentGroupAssignmentsProgress
+        var notStartedGroups = await coneDbContext.StudentGroupAssignmentsProgress
             .Where(p => p.AssignmentId == assignmentId && p.Status == AssignmentProgress.NotStarted)
             .Include(p => p.StudentGroup)
             .Select(p => p.StudentGroup!)
@@ -20,7 +20,7 @@ public class AssignmentStudentGroupService(ConeDbContext ConeDbContext): IAssign
 
     public async Task<IReadOnlyList<StudentGroups>> GetInProgressStudentGroupsAsync(long assignmentId, CancellationToken cancellationToken)
     {
-        var inProgressGroups = await ConeDbContext.StudentGroupAssignmentsProgress
+        var inProgressGroups = await coneDbContext.StudentGroupAssignmentsProgress
             .Where(p => p.AssignmentId == assignmentId && p.Status == AssignmentProgress.InProgress)
             .Include(p => p.StudentGroup)
             .Select(p => p.StudentGroup!)
@@ -31,7 +31,7 @@ public class AssignmentStudentGroupService(ConeDbContext ConeDbContext): IAssign
 
     public async Task<IReadOnlyList<StudentGroups>> GetCompletedStudentGroupsAsync(long assignmentId, CancellationToken cancellationToken)
     {
-        var completedGroups = await ConeDbContext.StudentGroupAssignmentsProgress
+        var completedGroups = await coneDbContext.StudentGroupAssignmentsProgress
             .Where(p => p.AssignmentId == assignmentId && p.Status == AssignmentProgress.Completed)
             .Include(p => p.StudentGroup)
             .Select(p => p.StudentGroup!)
@@ -42,7 +42,7 @@ public class AssignmentStudentGroupService(ConeDbContext ConeDbContext): IAssign
 
     public async Task UpdateBulkStatusAsync(long assignmentId, List<long> studentGroupIds, AssignmentProgress newStatus, CancellationToken cancellationToken)
     {
-        var progressRecords = await ConeDbContext.StudentGroupAssignmentsProgress
+        var progressRecords = await coneDbContext.StudentGroupAssignmentsProgress
             .Where(p => p.AssignmentId == assignmentId && studentGroupIds.Contains(p.StudentGroupId))
             .ToListAsync(cancellationToken);
 
@@ -52,6 +52,6 @@ public class AssignmentStudentGroupService(ConeDbContext ConeDbContext): IAssign
             record.UpdatedAt = DateTime.UtcNow;
         }
 
-        await ConeDbContext.SaveChangesAsync(cancellationToken);
+        await coneDbContext.SaveChangesAsync(cancellationToken);
     }
 }

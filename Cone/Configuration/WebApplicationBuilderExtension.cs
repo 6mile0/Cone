@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Cone.Db;
 using Cone.Db.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;

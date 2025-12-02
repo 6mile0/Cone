@@ -6,18 +6,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cone.Services.StudentGroupService;
 
-public class StudentGroupService(ConeDbContext ConeDbContext) : IStudentGroupService
+public class StudentGroupService(ConeDbContext coneDbContext) : IStudentGroupService
 {
     public async Task<IReadOnlyList<StudentGroups>> GetAllStudentGroupsAsync(CancellationToken cancellationToken)
     {
-        return await ConeDbContext.StudentGroups
+        return await coneDbContext.StudentGroups
             .Include(sg => sg.Tickets)
             .ToListAsync(cancellationToken);
     }
 
     public async Task<StudentGroups?> GetStudentGroupByIdAsync(long? groupId, CancellationToken cancellationToken)
     {
-        return await ConeDbContext.StudentGroups
+        return await coneDbContext.StudentGroups
             .FirstOrDefaultAsync(g => g.Id == groupId, cancellationToken);
     }
 
@@ -30,8 +30,8 @@ public class StudentGroupService(ConeDbContext ConeDbContext) : IStudentGroupSer
             UpdatedAt = DateTimeOffset.UtcNow,
         };
 
-        ConeDbContext.StudentGroups.Add(studentGroup);
-        await ConeDbContext.SaveChangesAsync(cancellationToken);
+        coneDbContext.StudentGroups.Add(studentGroup);
+        await coneDbContext.SaveChangesAsync(cancellationToken);
 
         return studentGroup;
     }
@@ -48,7 +48,7 @@ public class StudentGroupService(ConeDbContext ConeDbContext) : IStudentGroupSer
 
     public async Task<StudentGroups> GetStudentGroupDetailAsync(long groupId, CancellationToken cancellationToken)
     {
-        var group = await ConeDbContext.StudentGroups
+        var group = await coneDbContext.StudentGroups
                         .FirstOrDefaultAsync(g => g.Id == groupId, cancellationToken)
                     ?? throw new EntityNotFoundException($"Student group with ID {groupId} not found.");
 
@@ -57,7 +57,7 @@ public class StudentGroupService(ConeDbContext ConeDbContext) : IStudentGroupSer
 
     public async Task UpdateAssignmentProgressAsync(UpdateAssignmentProgressDto updateAssignmentProgressDto, CancellationToken cancellationToken)
     {
-        var progress = await ConeDbContext.StudentGroupAssignmentsProgress
+        var progress = await coneDbContext.StudentGroupAssignmentsProgress
             .FirstOrDefaultAsync(p => p.StudentGroupId == updateAssignmentProgressDto.StudentGroupId
                 && p.AssignmentId == updateAssignmentProgressDto.AssignmentId, cancellationToken);
 
@@ -69,6 +69,6 @@ public class StudentGroupService(ConeDbContext ConeDbContext) : IStudentGroupSer
         progress.Status = updateAssignmentProgressDto.Status;
         progress.UpdatedAt = DateTimeOffset.UtcNow;
 
-        await ConeDbContext.SaveChangesAsync(cancellationToken);
+        await coneDbContext.SaveChangesAsync(cancellationToken);
     }
 }
