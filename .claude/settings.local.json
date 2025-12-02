@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -ExecutionPolicy Bypass -File replace_ice_with_cone.ps1)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

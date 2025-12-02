@@ -1,0 +1,32 @@
+﻿@model Cone.Areas.Student.ViewModels.Top.SeatMapViewModel
+@{
+    ViewData["Title"] = "座席表";
+}
+@addTagHelper *, Vereyon.Web.FlashMessage
+
+<div class="container mt-4">
+    <h1 class="mb-4">座席表</h1>
+    <p>自身が所属する班番号を選択してください。</p>
+    
+    <flash dismissable="true" />
+
+    @if (!Model.StudentGroups.Any())
+    {
+        <div class="alert alert-info" role="alert">
+            学生グループが登録されていません。
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var group in Model.StudentGroups)
+            {
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <a asp-area="Student" asp-controller="Ticket" asp-action="AddTicket" asp-route-studentGroupId="@group.Id" class="btn btn-primary btn-lg w-100 h-100 d-flex flex-column justify-content-center align-items-center p-4">
+                        <div class="fs-4 fw-bold mb-2">@group.GroupName</div>
+                    </a>
+                </div>
+            }
+        </div>
+    }
+</div>
