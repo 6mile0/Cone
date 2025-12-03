@@ -39,6 +39,7 @@
         overlay.className = 'ticket-notification-overlay';
         overlay.innerHTML = `
             <div class="ticket-notification">
+                <button class="notification-close-btn" aria-label="閉じる">&times;</button>
                 <div class="notification-content">
                     <h2>🔔 新しいチケット</h2>
                     <div class="notification-info">
@@ -60,12 +61,33 @@
         `;
 
         document.body.appendChild(overlay);
-        
+
+        // 通知を閉じる関数
+        function closeNotification() {
+            if (autoCloseTimeout) {
+                clearTimeout(autoCloseTimeout);
+            }
+            overlay.classList.remove('show');
+            setTimeout(() => overlay.remove(), 300);
+        }
+
+        // 閉じるボタンのイベント
+        const closeBtn = overlay.querySelector('.notification-close-btn');
+        closeBtn.addEventListener('click', closeNotification);
+
+        // オーバレイの背景をクリックしても閉じる
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                closeNotification();
+            }
+        });
+
         setTimeout(() => overlay.classList.add('show'), 10);
-        
+
         setTimeout(() => overlay.classList.add('flash'), 100);
-        
-        setTimeout(() => {
+
+        // 10秒後に自動的に閉じる
+        const autoCloseTimeout = setTimeout(() => {
             overlay.classList.remove('show');
             setTimeout(() => overlay.remove(), 300);
         }, 10000);
@@ -110,18 +132,19 @@
 
     function createStaffCard(staff) {
         const escapedName = escapeHtml(staff.fullName);
-        const ticketCount = staff.currentTickets ? staff.currentTickets.length : 0;
         const statusBadge = staff.isWorking
-            ? `<span class="badge bg-success">対応中 (${ticketCount})</span>`
+            ? '<span class="badge bg-success">対応中</span>'
             : '<span class="badge bg-secondary">待機中</span>';
 
         let ticketInfo = '';
         if (staff.isWorking && staff.currentTickets && staff.currentTickets.length > 0) {
             const ticketList = staff.currentTickets.map(ticket => {
                 const escapedTitle = escapeHtml(ticket.title);
+                const escapedGroupName = escapeHtml(ticket.studentGroupName);
                 return `
                     <div class="mb-1">
                         <a href="/admin/tickets/${ticket.id}" class="text-decoration-none">
+                            <span class="badge bg-info text-dark me-1" style="font-size: 0.95rem; padding: 0.4rem 0.6rem;">${escapedGroupName}</span>
                             ${escapedTitle}
                             <i class="bi bi-box-arrow-up-right ms-1"></i>
                         </a>

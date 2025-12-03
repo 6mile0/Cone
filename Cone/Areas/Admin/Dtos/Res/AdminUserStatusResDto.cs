@@ -12,4 +12,5 @@ public class CurrentTicketDto
 {
     public long Id { get; init; }
     public string Title { get; init; } = string.Empty;
+    public string StudentGroupName { get; init; } = string.Empty;
 }

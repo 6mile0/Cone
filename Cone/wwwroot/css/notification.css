@@ -31,6 +31,37 @@
     text-align: center;
     transform: scale(0.7);
     transition: transform 0.3s ease-in-out;
+    position: relative;
+}
+
+.notification-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    color: white;
+    font-size: 32px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+    padding: 0;
+    line-height: 1;
+}
+
+.notification-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.8);
+    transform: scale(1.1);
+}
+
+.notification-close-btn:active {
+    transform: scale(0.95);
 }
 
 .ticket-notification-overlay.show .ticket-notification {
@@ -88,6 +119,14 @@
     .ticket-notification {
         padding: 40px 30px;
         width: 95%;
+    }
+
+    .notification-close-btn {
+        top: 15px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
     }
 
     .notification-content h2 {

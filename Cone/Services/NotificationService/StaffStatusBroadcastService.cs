@@ -60,7 +60,8 @@ public class StaffStatusBroadcastService(
             var currentTicketDtos = currentTickets.Select(t => new CurrentTicketDto
             {
                 Id = t.Id,
-                Title = t.Title
+                Title = t.Title,
+                StudentGroupName = t.StudentGroup.GroupName
             }).ToList();
 
             return new AdminUserStatusResDto
