@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+﻿FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /src
 COPY ["Cone.csproj", "./"]
 RUN dotnet restore
@@ -12,7 +12,7 @@ RUN dotnet publish "Cone.csproj" -c Release -o /app/publish  \
    && dotnet ef migrations bundle -o /app/publish/bundle \
    && chmod 755 /app/publish/bundle
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS final
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 COPY --from=publish /app/publish/bundle ./bundle
